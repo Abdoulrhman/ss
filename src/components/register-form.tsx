@@ -2,11 +2,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { registerAccount } from "@/api/adminApis";  // Import the API call function
+import { registerAccount } from "@/api/adminApis"; // Import the API call function
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -36,7 +43,7 @@ const FormSchema = z.object({
 });
 
 interface RegisterFormProps {
-  setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsLogin?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function RegisterForm({ setIsLogin }: RegisterFormProps) {
@@ -52,11 +59,11 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
   });
 
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);  // Track loading state
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setIsLoading(true);  // Set loading state to true when submission starts
+    setIsLoading(true); // Set loading state to true when submission starts
     try {
       // Call the registerAccount API function
       const response = await registerAccount({
@@ -75,7 +82,7 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
       console.error("Registration failed", err);
       setError(err.message || "Registration failed"); // Set the error message
     } finally {
-      setIsLoading(false);  // Set loading state to false when submission is complete
+      setIsLoading(false); // Set loading state to false when submission is complete
     }
   }
 
@@ -89,7 +96,10 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-md">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 w-full max-w-md"
+        >
           {/* Name field */}
           <FormField
             control={form.control}
@@ -128,7 +138,11 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Enter your email" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="Enter your email"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,7 +160,12 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
                   <FormControl>
                     <DatePicker
                       selected={field.value ? new Date(field.value) : null}
-                      onChange={(date) => form.setValue("birthDate", date ? date.toISOString() : "")}
+                      onChange={(date) =>
+                        form.setValue(
+                          "birthDate",
+                          date ? date.toISOString() : ""
+                        )
+                      }
                       placeholderText={new Date().toLocaleDateString()}
                       className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1"
                     />
@@ -181,13 +200,9 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
 
           {/* Submit button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Registering..." : "Register"}  {/* Change button text when loading */}
+            {isLoading ? "Adding New User..." : "Add User"}{" "}
+            {/* Change button text when loading */}
           </Button>
-
-          <p className="text-center" onClick={() => setIsLogin(true)}>
-            Already have an account?
-            <a href="#" className="text-blue-500"> Sign in</a>
-          </p>
         </form>
       </Form>
     </div>

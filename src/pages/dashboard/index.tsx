@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { AddFileStudentForm } from "@/components/add-file-student";
+import { useState, useEffect } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,45 +8,120 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut } from "lucide-react";  // For logout icon
-
+import { LogOut, ArrowLeft, ArrowRight } from "lucide-react"; // Added ArrowRight for open button
+import { UsersTable } from "./admin/users_table";
+import { AddFileStudentForm } from "@/components/add-file-student";
 
 // Sidebar component
-function Sidebar({ activeTab, setActiveTab }: { activeTab: string; setActiveTab: React.Dispatch<React.SetStateAction<string>> }) {
+function Sidebar({
+  activeTab,
+  setActiveTab,
+  isOpen,
+  toggleSidebar,
+}: {
+  activeTab: string;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  isOpen: boolean;
+  toggleSidebar: () => void;
+}) {
   return (
-    <div className="w-64 h-screen bg-muted p-4 flex flex-col gap-4">
-      <button
-        className={`text-left p-2 rounded-lg ${activeTab === "addFileStudent" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-        onClick={() => setActiveTab("addFileStudent")}
+    <>
+      {/* Sidebar container */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-64 h-screen bg-black p-4 flex flex-col gap-4 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-64"
+        } transition-transform duration-300 ease-in-out`}
       >
-        Add File Student
-      </button>
-      <button
-        className={`text-left p-2 rounded-lg ${activeTab === "otherTab" ? "bg-blue-500 text-white" : "bg-gray-100"}`}
-        onClick={() => setActiveTab("otherTab")}
-      >
-        Other Dashboard Tab
-      </button>
-      {/* Add more buttons for other sections here */}
-    </div>
+        {/* Close button */}
+        <button className="text-white text-right mb-4" onClick={toggleSidebar}>
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+
+        <h1 className="text-white font-bold text-lg">Sidebar</h1>
+
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "addFileStudent"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("addFileStudent")}
+        >
+          Add File Student
+        </button>
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "addAdmin"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("addAdmin")}
+        >
+          Users
+        </button>
+      </div>
+
+      {/* Open button - Stays on screen when sidebar is closed */}
+      {!isOpen && (
+        <button
+          className="fixed top-4 left-4 z-50 bg-black text-white p-2 rounded-full"
+          onClick={toggleSidebar}
+        >
+          <ArrowRight className="h-6 w-6" />
+        </button>
+      )}
+    </>
   );
 }
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("addFileStudent"); // State to track the active tab
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar open by default
+
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+
+  // Close the sidebar by default on small screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsSidebarOpen(false); // Close sidebar on small screens
+      } else {
+        setIsSidebarOpen(true); // Open sidebar on larger screens
+      }
+    };
+
+    // Initial check
+    handleResize();
+
+    // Listen for window resize events
+    window.addEventListener("resize", handleResize);
+
+    // Clean up event listener on component unmount
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleLogout = () => {
     console.log("Logout clicked");
-    // Add your logout logic here (e.g., clearing tokens, redirecting, etc.)
   };
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 justify-between">
+      {/* Apply ml-64 when sidebar is open */}
+      <header
+        className={`flex h-16 shrink-0 items-center gap-2 border-b px-4 justify-between transition-all duration-300 ${
+          isSidebarOpen ? "ml-64" : "ml-0"
+        }`}
+      >
         <div className="flex items-center">
-          {/* Logo */}
-          {/* <img src="/path/to/logo.png" alt="Logo" className="h-8 w-8 mr-4" />  */}
           <p>Logo</p>
           <Separator orientation="vertical" className="mr-2 ml-2 h-4" />
           <Breadcrumb>
@@ -58,7 +132,11 @@ export default function Dashboard() {
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 <BreadcrumbPage>
-                  {activeTab === "addFileStudent" ? "Add File Student" : "Other Dashboard Tab"}
+                  {activeTab === "addFileStudent"
+                    ? "Add File Student"
+                    : activeTab === "addAdmin"
+                    ? "Add Admin"
+                    : "Other Dashboard Tab"}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -70,7 +148,8 @@ export default function Dashboard() {
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
               <AvatarImage src="https://github.com/username.png" alt="User" />
-              <AvatarFallback>U</AvatarFallback>  {/* Fallback in case image fails */}
+              <AvatarFallback>U</AvatarFallback>{" "}
+              {/* Fallback in case image fails */}
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={10}>
@@ -86,22 +165,33 @@ export default function Dashboard() {
 
       <div className="flex">
         {/* Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
 
         {/* Main content */}
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          {/* Conditional rendering of the AddFileStudentForm or other content */}
+        <div
+          className={`flex flex-1 flex-col gap-4 p-4 transition-all duration-300 ${
+            isSidebarOpen ? "ml-64" : "ml-0"
+          }`}
+        >
+          {/* Conditional rendering based on active tab */}
           {activeTab === "addFileStudent" ? (
             <>
-              <h1 className="text-2xl font-bold mb-4">Add File Student</h1>  {/* Heading for Add File Student */}
+              <h1 className="text-2xl font-bold mb-4">Add File Student</h1>
               <AddFileStudentForm />
+            </>
+          ) : activeTab === "addAdmin" ? (
+            <>
+              <h1 className="text-2xl font-bold mb-4">Add Admin</h1>
+              <UsersTable />
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold mb-4">Other Dashboard Tab</h1>  {/* Heading for Other Dashboard Tab */}
-              <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
-                <h2 className="text-xl">Other Dashboard Tab Content</h2>
-              </div>
+              <h1 className="text-2xl font-bold mb-4">Other Dashboard Tab</h1>
             </>
           )}
         </div>

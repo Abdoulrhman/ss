@@ -3,12 +3,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";  // shadcn select component
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { addFileStudent } from "@/api/adminApis";  // Import the API call function
+import { addFileStudent } from "@/api/adminApis"; // Import the API call function
 
 // Validation schema using Zod
 const FormSchema = z.object({
@@ -22,14 +35,10 @@ const FormSchema = z.object({
 // Sample Grade and School Data with fixed IDs
 const gradeOptions = [
   { id: "d1ebe318-0a70-44ac-b244-768bdb3b974e", name: "Grade 1" },
-  { id: "d1ebe318-0a70-44ac-b244-768bdb3b974e", name: "Grade 2" },
-  { id: "d1ebe318-0a70-44ac-b244-768bdb3b974e", name: "Grade 3" },
 ];
 
 const schoolOptions = [
-  { id: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7", name: "School 1" },
-  { id: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7", name: "School 2" },
-  { id: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7", name: "School 3" },
+  { id: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7", name: "School 1 " },
 ];
 
 export function AddFileStudentForm() {
@@ -52,8 +61,14 @@ export function AddFileStudentForm() {
     setSuccess(null);
 
     try {
-      const response = await addFileStudent(data.gradeId, data.schoolId, data.studentFile);
-      setSuccess("File uploaded successfully!");
+      const response = await addFileStudent(
+        data.gradeId,
+        data.schoolId,
+        data.studentFile
+      );
+      setSuccess(
+        "File uploaded successfully!, new file with passwords already downloaded"
+      );
       console.log(response);
     } catch (err: any) {
       setError(err.message || "File upload failed");
@@ -78,8 +93,10 @@ export function AddFileStudentForm() {
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full max-w-md">
-          
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 w-full max-w-md"
+        >
           {/* GradeId dropdown */}
           <FormField
             control={form.control}
@@ -88,7 +105,10 @@ export function AddFileStudentForm() {
               <FormItem>
                 <FormLabel>Grade</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Grade" />
                     </SelectTrigger>
@@ -114,7 +134,10 @@ export function AddFileStudentForm() {
               <FormItem>
                 <FormLabel>School</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select School" />
                     </SelectTrigger>
@@ -143,7 +166,9 @@ export function AddFileStudentForm() {
                   <Input
                     type="file"
                     onChange={(e) => {
-                      const file = e.target.files ? e.target.files[0] : undefined;
+                      const file = e.target.files
+                        ? e.target.files[0]
+                        : undefined;
                       field.onChange(file);
                     }}
                   />

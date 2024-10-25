@@ -48,16 +48,7 @@ function Sidebar({
 
         <h1 className="text-white font-bold text-lg">Sidebar</h1>
 
-        <button
-          className={`text-left p-2 rounded-lg ${
-            activeTab === "addFileStudent"
-              ? "bg-gray-700 text-white"
-              : "hover:bg-gray-800 text-gray-400"
-          }`}
-          onClick={() => setActiveTab("addFileStudent")}
-        >
-          Add File Student
-        </button>
+        {/* Users Tab - moved to be first */}
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "addAdmin"
@@ -67,6 +58,18 @@ function Sidebar({
           onClick={() => setActiveTab("addAdmin")}
         >
           Users
+        </button>
+
+        {/* Add File Student Tab */}
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "addFileStudent"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("addFileStudent")}
+        >
+          Add File Student
         </button>
       </div>
 
@@ -84,8 +87,9 @@ function Sidebar({
 }
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("addFileStudent"); // State to track the active tab
+  const [activeTab, setActiveTab] = useState("addAdmin"); // Set Users as the default tab
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar open by default
+  const [modalOpen, setModalOpen] = useState(false); // Control modal open/close state
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -135,7 +139,7 @@ export default function Dashboard() {
                   {activeTab === "addFileStudent"
                     ? "Add File Student"
                     : activeTab === "addAdmin"
-                    ? "Add Admin"
+                    ? "Users"
                     : "Other Dashboard Tab"}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -186,8 +190,7 @@ export default function Dashboard() {
             </>
           ) : activeTab === "addAdmin" ? (
             <>
-              <h1 className="text-2xl font-bold mb-4">Add Admin</h1>
-              <UsersTable />
+              <UsersTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
             </>
           ) : (
             <>

@@ -1,25 +1,36 @@
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { RegisterForm } from "@/components/register-form"; // Import the RegisterForm
 
-export function AddAdminModal() {
+interface AddEditAdminModalProps {
+  isEdit?: boolean; // true if editing, false if adding
+  adminData?: any; // The data of the admin being edited (optional)
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onClose?: () => void; // Callback to close the modal
+}
+
+export function AddEditAdminModal({
+  isEdit = false,
+  adminData = null,
+  onClose,
+  open,
+  setOpen,
+}: AddEditAdminModalProps) {
+  // Determine if we are in add or edit mode
+  const modalTitle = isEdit ? "Edit Admin" : "Add New Admin";
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Add New Admin</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Admin</DialogTitle>
+          <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
-        <RegisterForm />
+        <RegisterForm isEdit={isEdit} adminData={adminData} onClose={onClose} />
       </DialogContent>
     </Dialog>
   );

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerAccount } from "@/api/adminApis"; // Import the API call function
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -43,18 +43,26 @@ const FormSchema = z.object({
 });
 
 interface RegisterFormProps {
-  setIsLogin?: React.Dispatch<React.SetStateAction<boolean>>;
+  isEdit?: boolean; // true if editing, false if adding
+  adminData?: any; // The data of the admin being edited (optional)
+  onClose?: () => void; // Callback to close the modal
 }
 
-export function RegisterForm({ setIsLogin }: RegisterFormProps) {
+export function RegisterForm({
+  isEdit = false,
+  adminData = null,
+  onClose,
+}: RegisterFormProps) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      birthDate: "",
-      gender: "0", // Default to Male
+      name: adminData?.Name || "",
+      phone: adminData?.Phone || "",
+      email: adminData?.Email || "",
+      birthDate: adminData?.BirthDate
+        ? new Date(adminData.BirthDate).toISOString()
+        : "",
+      gender: adminData?.Gender || "0", // Default to Male
     },
   });
 
@@ -65,22 +73,26 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true); // Set loading state to true when submission starts
     try {
-      // Call the registerAccount API function
-      const response = await registerAccount({
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        birthDate: new Date(data.birthDate).toISOString(), // Ensure correct date format
-        gender: Number(data.gender),
-      });
-
-      console.log("Registration successful", response);
-      navigate("/dashboard");
+      if (isEdit) {
+        // Call the updateAccount API function here for editing
+        console.log("Editing Admin:", data);
+      } else {
+        // Call the registerAccount API function here for adding
+        const response = await registerAccount({
+          name: data.name,
+          phone: data.phone,
+          email: data.email,
+          birthDate: new Date(data.birthDate).toISOString(), // Ensure correct date format
+          gender: Number(data.gender),
+        });
+        console.log("Registration successful", response);
+        navigate("/dashboard");
+      }
       setError(null); // Clear any previous errors
-      setIsLogin(true); // Switch to login form after successful registration
+      if (onClose) onClose(); // Close the modal on success
     } catch (err: any) {
-      console.error("Registration failed", err);
-      setError(err.message || "Registration failed"); // Set the error message
+      console.error("Operation failed", err);
+      setError(err.message || "Operation failed"); // Set the error message
     } finally {
       setIsLoading(false); // Set loading state to false when submission is complete
     }
@@ -108,7 +120,7 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your name" {...field} />
+                  <Input placeholder="Enter name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -123,7 +135,7 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your phone number" {...field} />
+                  <Input placeholder="Enter phone number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -138,11 +150,7 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    {...field}
-                  />
+                  <Input type="email" placeholder="Enter email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -200,8 +208,13 @@ export function RegisterForm({ setIsLogin }: RegisterFormProps) {
 
           {/* Submit button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Adding New User..." : "Add User"}{" "}
-            {/* Change button text when loading */}
+            {isLoading
+              ? isEdit
+                ? "Updating..."
+                : "Adding New User..."
+              : isEdit
+              ? "Update Admin"
+              : "Add Admin"}
           </Button>
         </form>
       </Form>

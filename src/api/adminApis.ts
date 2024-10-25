@@ -98,3 +98,36 @@ export const addFileStudent = async (
     throw error.response?.data || new Error("File upload failed");
   }
 };
+
+export const deleteUser = async (userId: string) => {
+  try {
+    const response = await apiInstance.delete(`/Account/Delete`, {
+      params: {
+        UserId: userId,
+      },
+    });
+    return response.data; // Assuming success data is returned here
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to delete user");
+  }
+};
+
+export const getAllUsers = async (
+  type: number,
+  page = 1,
+  size = 20,
+  keyword = ""
+) => {
+  try {
+    const response = await apiInstance.post("/Account/Search", {
+      Type: type, // Pass the type (e.g., 2 as in your screenshot)
+      page: page, // Optionally pass page number for pagination
+      Size: size, // Optionally pass the size for pagination
+      keyword: keyword, // Optionally pass a keyword for searching (email, name, etc.)
+    });
+
+    return response.data; // Return the successful response data containing the list of users
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to fetch users");
+  }
+};

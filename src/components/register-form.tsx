@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { registerAccount } from "@/api/adminApis"; // Import the API call function
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";

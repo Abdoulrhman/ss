@@ -27,11 +27,7 @@ const FormSchema = z.object({
   }),
 });
 
-interface LoginFormProps {
-  setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-export function LoginForm({ setIsLogin }: LoginFormProps) {
+export function LoginForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {

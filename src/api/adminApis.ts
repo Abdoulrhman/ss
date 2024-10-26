@@ -9,11 +9,11 @@ export const adminLogin = async (username: string, password: string) => {
     });
 
     // Assuming the token is returned in the response data under "token"
-    const { token } = response.data;
-
+    const { token } = response.data.Data;
+    debugger;
     // Store the token in localStorage
     if (token) {
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", "Bearer " + token);
     }
 
     return response.data; // Assuming the response contains user data or token
@@ -40,6 +40,37 @@ export const registerAccount = async (data: {
     return response.data; // Return the successful response data
   } catch (error: any) {
     throw error.response?.data || new Error("Registration failed"); // Handle the error
+  }
+};
+// Register new School Admin
+export const registerSchoolAdmin = async (data: {
+  SchoolId: string;
+  Name: string;
+  Phone: string;
+  Email: string;
+  Gender: number;
+  Note: string;
+}) => {
+  try {
+    const response = await apiInstance.post(
+      "/Account/AdminSchoolRegister",
+      data
+    );
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Registration failed");
+  }
+};
+
+// Get all school admins with type = 3
+export const getAllSchoolAdmins = async () => {
+  try {
+    const response = await apiInstance.post("/api/Account/Search", {
+      Type: 3,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to fetch school admins");
   }
 };
 
@@ -99,6 +130,51 @@ export const addFileStudent = async (
   }
 };
 
+export const downloadStudentsFile = async (
+  gradeId: string,
+  schoolId: string
+) => {
+  try {
+    // Send the POST request to download the file with the specified GradeId and SchoolId
+    const response = await apiInstance.post(
+      `/Account/DownloadStudentsFile`,
+      { GradeId: gradeId, SchoolId: schoolId }, // Request body containing GradeId and SchoolId
+      {
+        responseType: "blob", // Set the response type to 'blob' to handle binary data
+      }
+    );
+
+    // Create a blob from the response data
+    const blob = new Blob([response.data], {
+      type: response.headers["content-type"],
+    });
+
+    // Create a download link for the blob
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // Get the filename from the response headers if available, or use a default name
+    const filename =
+      response.headers["content-disposition"]
+        ?.split("filename=")[1]
+        ?.replace(/['"]/g, "") || "students_file.xlsx";
+    link.download = filename;
+
+    // Programmatically click the link to trigger the download
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and remove the link element
+    link.remove();
+
+    return response.data; // Return the response data (optional)
+  } catch (error: any) {
+    console.error("Failed to download the file", error);
+    throw error.response?.data || new Error("File download failed");
+  }
+};
+
 export const deleteUser = async (userId: string) => {
   try {
     const response = await apiInstance.delete(`/Account/Delete`, {
@@ -129,5 +205,27 @@ export const getAllUsers = async (
     return response.data; // Return the successful response data containing the list of users
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to fetch users");
+  }
+};
+
+export const registerStudent = async (data: {
+  UserName: string;
+  Email: string;
+  Phone: string;
+  Religion: string;
+  StateOfMind: string;
+  GradeId: string;
+  SchoolId: string;
+  SchoolName: string;
+  NationalityId: string;
+  Password: string;
+  Gender: number;
+  Address: string;
+}) => {
+  try {
+    const response = await apiInstance.post("/Account/StudentRegister", data);
+    return response.data; // Return the response data on success
+  } catch (error: any) {
+    throw error.response?.data || new Error("Student registration failed");
   }
 };

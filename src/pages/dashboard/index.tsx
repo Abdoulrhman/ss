@@ -17,9 +17,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, ArrowLeft, ArrowRight } from "lucide-react"; // Added ArrowRight for open button
+import { LogOut, ArrowLeft, ArrowRight } from "lucide-react";
 import { UsersTable } from "./admin/users_table";
 import { AddFileStudentForm } from "@/components/add-file-student";
+import { SchoolAdminUsersTable } from "./school-admin/school_admin_table";
+import { StudentUsersTable } from "./student/students_table";
+import { useNavigate } from "react-router-dom";
 
 // Sidebar component
 function Sidebar({
@@ -48,7 +51,7 @@ function Sidebar({
 
         <h1 className="text-white font-bold text-lg">Sidebar</h1>
 
-        {/* Users Tab - moved to be first */}
+        {/* Users Tab */}
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "addAdmin"
@@ -57,7 +60,30 @@ function Sidebar({
           }`}
           onClick={() => setActiveTab("addAdmin")}
         >
-          Users
+          Admin Users
+        </button>
+
+        {/* School Admins Tab */}
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "schoolAdmin"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("schoolAdmin")}
+        >
+          School Admins
+        </button>
+        {/* Student Users Tab */}
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "studentUsers"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("studentUsers")}
+        >
+          Student
         </button>
 
         {/* Add File Student Tab */}
@@ -92,6 +118,7 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false); // Control modal open/close state
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const route = useNavigate();
 
   // Close the sidebar by default on small screens
   useEffect(() => {
@@ -115,6 +142,9 @@ export default function Dashboard() {
 
   const handleLogout = () => {
     console.log("Logout clicked");
+    route("/");
+    localStorage.removeItem("token");
+
   };
 
   return (
@@ -140,6 +170,10 @@ export default function Dashboard() {
                     ? "Add File Student"
                     : activeTab === "addAdmin"
                     ? "Users"
+                    : activeTab === "schoolAdmin"
+                    ? "School Admins"
+                    : activeTab === "studentUsers"
+                    ? "Student"
                     : "Other Dashboard Tab"}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -191,6 +225,20 @@ export default function Dashboard() {
           ) : activeTab === "addAdmin" ? (
             <>
               <UsersTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
+            </>
+          ) : activeTab === "schoolAdmin" ? (
+            <>
+              <SchoolAdminUsersTable
+                modalOpen={modalOpen}
+                setModalOpen={setModalOpen}
+              />
+            </>
+          ) : activeTab === "studentUsers" ? (
+            <>
+              <StudentUsersTable
+                modalOpen={modalOpen}
+                setModalOpen={setModalOpen}
+              />
             </>
           ) : (
             <>

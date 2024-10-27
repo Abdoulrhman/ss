@@ -119,7 +119,7 @@ export function StudentUsersTable({ modalOpen, setModalOpen }: StudentUsersTable
           <TableBody>
             {students.map((student) => (
               <TableRow key={student.Id}>
-                <TableCell>{student.UserName}</TableCell>
+                <TableCell>{student.Name}</TableCell>
                 <TableCell>{student.Email}</TableCell>
                 <TableCell>{student.Phone}</TableCell>
                 <TableCell>

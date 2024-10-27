@@ -10,6 +10,20 @@ import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { registerStudent } from "@/api/adminApis";
 
+// Define options for dropdowns
+const religionOptions = ["Islam", "Christianity", "Hinduism", "Other"];
+const stateOfMindOptions = ["Calm", "Stressed", "Focused", "Distracted"];
+const gradeOptions = [
+  { label: "Grade 1", value: "d1ebe318-0a70-44ac-b244-768bdb3b974e" },
+  { label: "Grade 2", value: "another-grade-id" },
+  // Add more grades as needed
+];
+const schoolOptions = [
+  { label: "School A", value: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7" },
+  { label: "School B", value: "another-school-id" },
+  // Add more schools as needed
+];
+
 // Schema to validate the student registration form
 const FormSchema = z.object({
   userName: z.string().min(2, { message: "User Name must be at least 2 characters." }),
@@ -44,8 +58,8 @@ export function RegisterStudentForm({
       phone: studentData?.Phone || "",
       religion: studentData?.Religion || "",
       stateOfMind: studentData?.StateOfMind || "",
-      gradeId: studentData?.GradeId || "",
-      schoolId: studentData?.SchoolId || "",
+      gradeId: studentData?.GradeId || "d1ebe318-0a70-44ac-b244-768bdb3b974e",
+      schoolId: studentData?.SchoolId || "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7",
       nationalityId: studentData?.NationalityId || "",
       password: studentData?.Password || "",
       gender: studentData?.Gender || "0", // Default to Male
@@ -61,18 +75,18 @@ export function RegisterStudentForm({
     setIsLoading(true);
     try {
       const response = await registerStudent({
-          UserName: data.userName,
-          Email: data.email,
-          Phone: data.phone,
-          Religion: data.religion || "",
-          StateOfMind: data.stateOfMind || "",
-          GradeId: data.gradeId || "d1ebe318-0a70-44ac-b244-768bdb3b974e",
-          SchoolId: data.schoolId || "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7",
-          SchoolName: "testSchool", // Add appropriate value if needed
-          NationalityId: data.nationalityId || "",
-          Password: data.password,
-          Gender: Number(data.gender),
-          Address: data.address || "",
+        UserName: data.userName,
+        Email: data.email,
+        Phone: data.phone,
+        Religion: data.religion || "",
+        StateOfMind: data.stateOfMind || "",
+        GradeId: data.gradeId,
+        SchoolId: data.schoolId,
+        SchoolName: "testSchool",
+        NationalityId: data.nationalityId || "",
+        Password: data.password,
+        Gender: Number(data.gender),
+        Address: data.address || "",
       });
       console.log("Registration successful", response);
       navigate("/dashboard");
@@ -153,7 +167,12 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Religion</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter religion" {...field} />
+                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                    <option value="">Select religion</option>
+                    {religionOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -168,7 +187,12 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>State of Mind</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter state of mind" {...field} />
+                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                    <option value="">Select state of mind</option>
+                    {stateOfMindOptions.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -179,12 +203,16 @@ export function RegisterStudentForm({
           <FormField
             control={form.control}
             name="gradeId"
-            
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Grade ID</FormLabel>
+                <FormLabel>Grade</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter grade ID" {...field} />
+                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                    <option value="">Select grade</option>
+                    {gradeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -195,12 +223,16 @@ export function RegisterStudentForm({
           <FormField
             control={form.control}
             name="schoolId"
-            
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School ID</FormLabel>
+                <FormLabel>School</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter school ID" {...field} />
+                  <select {...field} className="w-full border rounded p-2 bg-gray-100" >
+                    <option value="">Select school</option>
+                    {schoolOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -245,7 +277,7 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
-                  <select className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1" {...field}>
+                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
                     <option value="0">Male</option>
                     <option value="1">Female</option>
                   </select>

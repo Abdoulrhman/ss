@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: 'http://sah-platform-admin-cpdsfdf8dkacfqgy.canadacentral-01.azurewebsites.net/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'), 

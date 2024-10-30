@@ -10,7 +10,6 @@ export const adminLogin = async (username: string, password: string) => {
 
     // Assuming the token is returned in the response data under "token"
     const { token } = response.data.Data;
-    debugger;
     // Store the token in localStorage
     if (token) {
       localStorage.setItem("token", "Bearer " + token);
@@ -209,7 +208,7 @@ export const getAllUsers = async (
 };
 
 export const registerStudent = async (data: {
-  UserName: string;
+  Name: string;
   Email: string;
   Phone: string;
   Religion: string;
@@ -217,7 +216,6 @@ export const registerStudent = async (data: {
   GradeId: string;
   SchoolId: string;
   SchoolName: string;
-  NationalityId: string;
   Password: string;
   Gender: number;
   Address: string;

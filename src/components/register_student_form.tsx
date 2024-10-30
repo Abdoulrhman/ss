@@ -11,8 +11,15 @@ import { useNavigate } from "react-router-dom";
 import { registerStudent } from "@/api/adminApis";
 
 // Define options for dropdowns
-const religionOptions = ["Islam", "Christianity", "Hinduism", "Other"];
-const stateOfMindOptions = ["Calm", "Stressed", "Focused", "Distracted"];
+const religionOptions = [
+  { label: "Muslim", value: "1" },
+  { label: "Christian", value: "2" },
+  { label: "Another Religion", value: "3" },
+];
+const stateOfMindOptions = [
+  { label: "Healthy", value: "1" },
+  { label: "Sick", value: "2" },
+];
 const gradeOptions = [
   { label: "Grade 1", value: "d1ebe318-0a70-44ac-b244-768bdb3b974e" },
   { label: "Grade 2", value: "another-grade-id" },
@@ -26,14 +33,13 @@ const schoolOptions = [
 
 // Schema to validate the student registration form
 const FormSchema = z.object({
-  userName: z.string().min(2, { message: "User Name must be at least 2 characters." }),
+  Name: z.string().min(2, { message: "User Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
   phone: z.string().min(10, { message: "Please enter a valid phone number." }),
   religion: z.string().optional(),
   stateOfMind: z.string().optional(),
   gradeId: z.string().min(1, { message: "Please select a valid grade." }),
   schoolId: z.string().min(1, { message: "Please select a valid school." }),
-  nationalityId: z.string().optional(),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
   address: z.string().optional(),
@@ -53,14 +59,13 @@ export function RegisterStudentForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      userName: studentData?.UserName || "",
+      Name: studentData?.Name || "",
       email: studentData?.Email || "",
       phone: studentData?.Phone || "",
       religion: studentData?.Religion || "",
       stateOfMind: studentData?.StateOfMind || "",
       gradeId: studentData?.GradeId || "d1ebe318-0a70-44ac-b244-768bdb3b974e",
       schoolId: studentData?.SchoolId || "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7",
-      nationalityId: studentData?.NationalityId || "",
       password: studentData?.Password || "",
       gender: studentData?.Gender || "0", // Default to Male
       address: studentData?.Address || "",
@@ -75,7 +80,7 @@ export function RegisterStudentForm({
     setIsLoading(true);
     try {
       const response = await registerStudent({
-        UserName: data.userName,
+        Name: data.Name,
         Email: data.email,
         Phone: data.phone,
         Religion: data.religion || "",
@@ -83,7 +88,6 @@ export function RegisterStudentForm({
         GradeId: data.gradeId,
         SchoolId: data.schoolId,
         SchoolName: "testSchool",
-        NationalityId: data.nationalityId || "",
         Password: data.password,
         Gender: Number(data.gender),
         Address: data.address || "",
@@ -117,7 +121,7 @@ export function RegisterStudentForm({
           {/* User Name field */}
           <FormField
             control={form.control}
-            name="userName"
+            name="Name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>User Name</FormLabel>
@@ -167,10 +171,15 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Religion</FormLabel>
                 <FormControl>
-                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                  >
                     <option value="">Select religion</option>
                     {religionOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </FormControl>
@@ -187,10 +196,15 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>State of Mind</FormLabel>
                 <FormControl>
-                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                  >
                     <option value="">Select state of mind</option>
                     {stateOfMindOptions.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </FormControl>
@@ -207,10 +221,15 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Grade</FormLabel>
                 <FormControl>
-                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                  >
                     <option value="">Select grade</option>
                     {gradeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
                 </FormControl>
@@ -227,27 +246,17 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>School</FormLabel>
                 <FormControl>
-                  <select {...field} className="w-full border rounded p-2 bg-gray-100" >
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                  >
                     <option value="">Select school</option>
                     {schoolOptions.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Nationality ID field */}
-          <FormField
-            control={form.control}
-            name="nationalityId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nationality ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter nationality ID" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -262,7 +271,11 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="Enter password" {...field} />
+                  <Input
+                    type="password"
+                    placeholder="Enter password"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -277,7 +290,10 @@ export function RegisterStudentForm({
               <FormItem>
                 <FormLabel>Gender</FormLabel>
                 <FormControl>
-                  <select {...field} className="w-full border rounded p-2 bg-gray-100">
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                  >
                     <option value="0">Male</option>
                     <option value="1">Female</option>
                   </select>
@@ -305,7 +321,11 @@ export function RegisterStudentForm({
           {/* Submit button */}
           <div className="col-span-2">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Submitting..." : isEdit ? "Update Student" : "Register Student"}
+              {isLoading
+                ? "Submitting..."
+                : isEdit
+                ? "Update Student"
+                : "Register Student"}
             </Button>
           </div>
         </form>

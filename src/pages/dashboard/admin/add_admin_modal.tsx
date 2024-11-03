@@ -25,8 +25,8 @@ export function AddEditAdminModal({
   const modalTitle = isEdit ? "Edit Admin" : "Add New Admin";
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={setOpen} >
+      <DialogContent  className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>

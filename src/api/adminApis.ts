@@ -1,10 +1,10 @@
 import apiInstance from "./axiosInstance";
 
 // Login function
-export const adminLogin = async (username: string, password: string) => {
+export const adminLogin = async (email: string, password: string) => {
   try {
     const response = await apiInstance.post("/Account/AdminLogin", {
-      username,
+      email,
       password,
     });
 
@@ -27,6 +27,7 @@ export const registerAccount = async (data: {
   email: string;
   birthDate: string;
   gender: number;
+  password: string;
 }) => {
   try {
     const response = await apiInstance.post("/Account/Register", {
@@ -35,6 +36,7 @@ export const registerAccount = async (data: {
       Email: data.email,
       BirthDate: data.birthDate,
       Gender: data.gender,
+      Password: data.password,
     });
     return response.data; // Return the successful response data
   } catch (error: any) {
@@ -48,7 +50,7 @@ export const registerSchoolAdmin = async (data: {
   Phone: string;
   Email: string;
   Gender: number;
-  Note: string;
+  Password: string;
 }) => {
   try {
     const response = await apiInstance.post(
@@ -208,6 +210,7 @@ export const getAllUsers = async (
 };
 
 export const registerStudent = async (data: {
+  StudentName: string;
   Name: string;
   Email: string;
   Phone: string;
@@ -219,11 +222,25 @@ export const registerStudent = async (data: {
   Password: string;
   Gender: number;
   Address: string;
+  StudentCode: string;
 }) => {
   try {
     const response = await apiInstance.post("/Account/StudentRegister", data);
     return response.data; // Return the response data on success
   } catch (error: any) {
     throw error.response?.data || new Error("Student registration failed");
+  }
+};
+
+export const searchSchools = async (keyword: string = "", page: number = 1, size: number = 20) => {
+  try {
+    const response = await apiInstance.post("/School/Search", {
+      keyword, // The keyword to search for schools, if any
+      page,    // Optional: page number for pagination
+      size     // Optional: page size for pagination
+    });
+    return response.data; // Return the response data containing the search results
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to search for schools");
   }
 };

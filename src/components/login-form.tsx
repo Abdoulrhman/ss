@@ -17,10 +17,10 @@ import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Update schema to include both username and password
+// Update schema to include email and password
 const FormSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+  email: z.string().email({
+    message: "Please enter a valid email.",
   }),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
@@ -31,28 +31,28 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
 
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Track loading state
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setIsLoading(true); // Set loading state to true when the request starts
+    setIsLoading(true);
     try {
-      // Call the login function with the username and password
-      const response = await adminLogin(data.username, data.password);
+      // Call the login function with the email and password
+      const response = await adminLogin(data.email, data.password);
       console.log("Login successful", response);
-      navigate("/dashboard"); // Redirect to dashboard on successful login
-      setError(null); // Clear any previous errors
+      navigate("/dashboard");
+      setError(null);
     } catch (error: any) {
       console.error("Login failed", error);
       setError(error.Message || "Login failed");
     } finally {
-      setIsLoading(false); // Set loading state to false when the request is complete
+      setIsLoading(false);
     }
   }
 
@@ -69,15 +69,15 @@ export function LoginForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 w-full max-w-md"
         >
-          {/* Username field */}
+          {/* Email field */}
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your username" {...field} />
+                  <Input placeholder="Enter your email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -109,7 +109,7 @@ export function LoginForm() {
 
           {/* Submit button */}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Signing In..." : "Sign In"} {/* Show loading text */}
+            {isLoading ? "Signing In..." : "Sign In"}
           </Button>
         </form>
       </Form>

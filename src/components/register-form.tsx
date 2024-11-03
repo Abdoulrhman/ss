@@ -20,27 +20,36 @@ import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 // Schema to validate the registration form
-const FormSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  phone: z.string().min(10, {
-    message: "Please enter a valid phone number.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email.",
-  }),
-  birthDate: z.string().refine(
-    (data) => {
-      const date = new Date(data);
-      return date instanceof Date && !isNaN(date.getTime());
-    },
-    {
-      message: "Please enter a valid date.",
-    }
-  ),
-  gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
-});
+const FormSchema = z
+  .object({
+    name: z.string().min(2, {
+      message: "Name must be at least 2 characters.",
+    }),
+    email: z.string().optional(),
+    phone: z.string().optional(),
+    birthDate: z.string().refine(
+      (data) => {
+        if (!data) return true; // Allow empty birthDate
+        const date = new Date(data);
+        return date instanceof Date && !isNaN(date.getTime());
+      },
+      {
+        message: "Please enter a valid date.",
+      }
+    ).optional(),
+    gender: z.enum(["0", "1"]).optional(), // 0 for Male, 1 for Female
+    password: z.string().min(6, {
+      message: "Password must be at least 6 characters.",
+    }),
+    confirmPassword: z.string().min(6, {
+      message: "Confirm Password must be at least 6 characters.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
 
 interface RegisterFormProps {
   isEdit?: boolean; // true if editing, false if adding
@@ -63,6 +72,8 @@ export function RegisterForm({
         ? new Date(adminData.BirthDate).toISOString()
         : "",
       gender: adminData?.Gender || "0", // Default to Male
+      password: "",
+      confirmPassword: "",
     },
   });
 
@@ -71,30 +82,34 @@ export function RegisterForm({
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setIsLoading(true); // Set loading state to true when submission starts
+    setIsLoading(true);
     try {
       if (isEdit) {
-        // Call the updateAccount API function here for editing
         console.log("Editing Admin:", data);
       } else {
-        // Call the registerAccount API function here for adding
         const response = await registerAccount({
           name: data.name,
-          phone: data.phone,
-          email: data.email,
-          birthDate: new Date(data.birthDate).toISOString(), // Ensure correct date format
+          phone: data.phone || "",
+          email: data.email || "",
+          birthDate: data.birthDate ? new Date(data.birthDate).toISOString() : "",
           gender: Number(data.gender),
+          password: data.password,
         });
         console.log("Registration successful", response);
         navigate("/dashboard");
       }
-      setError(null); // Clear any previous errors
-      if (onClose) onClose(); // Close the modal on success
+      setError(null);
+      if (onClose) onClose();
     } catch (err: any) {
-      console.error("Operation failed", err);
-      setError(err.message || "Operation failed"); // Set the error message
+      
+      if (err.Message) {
+               setError(err.Message);
+      } else {
+        setError("Operation failed");
+      }
+      console.error("Registration failed", err);
     } finally {
-      setIsLoading(false); // Set loading state to false when submission is complete
+      setIsLoading(false);
     }
   }
 
@@ -118,7 +133,7 @@ export function RegisterForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter name" {...field} />
                 </FormControl>
@@ -205,6 +220,44 @@ export function RegisterForm({
               )}
             />
           </div>
+
+          {/* Password field */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Confirm Password field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Submit button */}
           <Button type="submit" className="w-full" disabled={isLoading}>

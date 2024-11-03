@@ -11,34 +11,38 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { registerSchoolAdmin } from "@/api/adminApis"; // Import the API call function
+import { registerSchoolAdmin } from "@/api/adminApis";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSchoolSearch } from "@/hooks/useSchoolSearch";
 
 // Schema to validate the registration form
-const FormSchema = z.object({
-  schoolId: z.string().min(1, {
-    message: "School ID is required.",
-  }),
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  phone: z.string().min(10, {
-    message: "Please enter a valid phone number.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email.",
-  }),
-  note: z.string().optional(), // Optional note field
-  gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
-});
+const FormSchema = z
+  .object({
+    schoolId: z.string().min(1, { message: "School ID is required." }),
+    name: z
+    .string()
+    .min(2, { message: "Name must be at least 2 characters." })
+    .regex(/^[a-zA-Z0-9]+$/, {
+      message: "Name must contain only letters and numbers, no spaces or special characters.",
+    }),
+    phone: z.string().optional(),
+    email: z.string().optional(),
+    gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
+    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    confirmPassword: z.string().min(6, { message: "Confirm Password must be at least 6 characters." }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
 
 interface RegisterSchoolAdminFormProps {
-  isEdit?: boolean; // true if editing, false if adding
-  adminData?: any; // The data of the admin being edited (optional)
-  onClose?: () => void; // Callback to close the modal
+  isEdit?: boolean;
+  adminData?: any;
+  onClose?: () => void;
 }
 
 export function RegisterSchoolAdminForm({
@@ -46,6 +50,7 @@ export function RegisterSchoolAdminForm({
   adminData = null,
   onClose,
 }: RegisterSchoolAdminFormProps) {
+  const { schools, isLoading, error: schoolError } = useSchoolSearch();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -53,41 +58,36 @@ export function RegisterSchoolAdminForm({
       name: adminData?.Name || "",
       phone: adminData?.Phone || "",
       email: adminData?.Email || "",
-      note: adminData?.Note || "",
-      gender: adminData?.Gender || "0", // Default to Male
+      gender: adminData?.Gender || "0",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Track loading state
+  const [isLoadingSubmit, setIsLoadingSubmit] = useState(false);
   const navigate = useNavigate();
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    setIsLoading(true); // Set loading state to true when submission starts
+    setIsLoadingSubmit(true);
     try {
-      if (isEdit) {
-        // Call the updateAccount API function here for editing
-        console.log("Editing School Admin:", data);
-      } else {
-        // Call the registerSchoolAdmin API function here for adding
-        const response = await registerSchoolAdmin({
-          SchoolId: data.schoolId,
-          Name: data.name,
-          Phone: data.phone,
-          Email: data.email,
-          Gender: Number(data.gender),
-          Note: data.note || "", // Optional note
-        });
-        console.log("School Admin Registration successful", response);
-        navigate("/dashboard");
-      }
-      setError(null); // Clear any previous errors
-      if (onClose) onClose(); // Close the modal on success
+      const response = await registerSchoolAdmin({
+        SchoolId: data.schoolId,
+        Name: data.name,
+        Phone: data.phone || "",
+        Email: data.email || "",
+        Gender: Number(data.gender),
+        Password: data.password, // Include password
+      });
+      console.log("School Admin Registration successful", response);
+      navigate("/dashboard");
+      if (onClose) onClose();
+      setError(null);
     } catch (err: any) {
       console.error("Operation failed", err);
-      setError(err.message || "Operation failed"); // Set the error message
+      setError(err.Message || "Operation failed");
     } finally {
-      setIsLoading(false); // Set loading state to false when submission is complete
+      setIsLoadingSubmit(false);
     }
   }
 
@@ -105,16 +105,29 @@ export function RegisterSchoolAdminForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6 w-full max-w-md"
         >
-          {/* School ID field */}
+          {/* School ID dropdown */}
           <FormField
             control={form.control}
             name="schoolId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School ID</FormLabel>
+                <FormLabel>School</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter school ID" {...field} />
+                  <select
+                    className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1"
+                    {...field}
+                    disabled={isLoading}
+                  >
+                    <option value="" disabled>Select a school</option>
+                    {schools.map((school) => (
+                      <option key={school.Id} value={school.Id}>
+                        {school.NameEn}
+                      </option>
+                    ))}
+                  </select>
                 </FormControl>
+                {isLoading && <p>Loading schools...</p>}
+                {schoolError && <p className="text-red-500">{schoolError}</p>}
                 <FormMessage />
               </FormItem>
             )}
@@ -126,7 +139,7 @@ export function RegisterSchoolAdminForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Username</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter name" {...field} />
                 </FormControl>
@@ -165,53 +178,73 @@ export function RegisterSchoolAdminForm({
             )}
           />
 
-          {/* Note field */}
+          {/* Gender field */}
           <FormField
             control={form.control}
-            name="note"
+            name="gender"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Note</FormLabel>
+                <FormLabel>Gender</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter a note (optional)" {...field} />
+                  <select
+                    className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1"
+                    {...field}
+                  >
+                    <option value="0">Male</option>
+                    <option value="1">Female</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="flex space-x-4">
-            {/* Gender field */}
-            <FormField
-              control={form.control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem className="w-1/2">
-                  <FormLabel className="block">Gender</FormLabel>
-                  <FormControl>
-                    <select
-                      className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      <option value="0">Male</option>
-                      <option value="1">Female</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          {/* Password field */}
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Confirm Password field */}
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Submit button */}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading
+          <Button type="submit" className="w-full" disabled={isLoadingSubmit}>
+            {isLoadingSubmit
               ? isEdit
                 ? "Updating..."
-                : "Adding New School Admin..."
+                : "Adding..."
               : isEdit
-              ? "Update School Admin"
+              ? "Update"
               : "Add School Admin"}
           </Button>
         </form>

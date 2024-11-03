@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { registerStudent } from "@/api/adminApis";
+import { useSchoolSearch } from "@/hooks/useSchoolSearch"; // Import the custom hook
 
 // Define options for dropdowns
 const religionOptions = [
@@ -23,19 +24,19 @@ const stateOfMindOptions = [
 const gradeOptions = [
   { label: "Grade 1", value: "d1ebe318-0a70-44ac-b244-768bdb3b974e" },
   { label: "Grade 2", value: "another-grade-id" },
-  // Add more grades as needed
-];
-const schoolOptions = [
-  { label: "School A", value: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7" },
-  { label: "School B", value: "another-school-id" },
-  // Add more schools as needed
 ];
 
 // Schema to validate the student registration form
 const FormSchema = z.object({
-  Name: z.string().min(2, { message: "User Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
-  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  studentCode: z.string().regex(/^[a-zA-Z0-9]+$/, { message: "Student Code must be alphanumeric." }).min(1, { message: "Student Code is required." }),
+  Name: z
+    .string()
+    .min(2, { message: "Name must be at least 2 characters." })
+    .regex(/^[a-zA-Z0-9]+$/, {
+      message: "Name must contain only letters and numbers, no spaces or special characters.",
+    }),
+  studentName: z.string().min(2, { message: "Student Name must be at least 2 characters." }),
+  email: z.string().optional(),
   religion: z.string().optional(),
   stateOfMind: z.string().optional(),
   gradeId: z.string().min(1, { message: "Please select a valid grade." }),
@@ -46,9 +47,9 @@ const FormSchema = z.object({
 });
 
 interface RegisterStudentFormProps {
-  isEdit?: boolean; // true if editing, false if adding
-  studentData?: any; // The data of the student being edited (optional)
-  onClose?: () => void; // Callback to close the modal
+  isEdit?: boolean;
+  studentData?: any;
+  onClose?: () => void;
 }
 
 export function RegisterStudentForm({
@@ -56,18 +57,20 @@ export function RegisterStudentForm({
   studentData = null,
   onClose,
 }: RegisterStudentFormProps) {
+  const { schools, isLoading: isLoadingSchools, error: schoolError } = useSchoolSearch();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      studentCode: studentData?.studentCode || "",
       Name: studentData?.Name || "",
+      studentName: studentData?.studentName || "",
       email: studentData?.Email || "",
-      phone: studentData?.Phone || "",
       religion: studentData?.Religion || "",
       stateOfMind: studentData?.StateOfMind || "",
       gradeId: studentData?.GradeId || "d1ebe318-0a70-44ac-b244-768bdb3b974e",
-      schoolId: studentData?.SchoolId || "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7",
+      schoolId: studentData?.SchoolId || "",
       password: studentData?.Password || "",
-      gender: studentData?.Gender || "0", // Default to Male
+      gender: studentData?.Gender || "0",
       address: studentData?.Address || "",
     },
   });
@@ -80,14 +83,16 @@ export function RegisterStudentForm({
     setIsLoading(true);
     try {
       const response = await registerStudent({
+        StudentCode: data.studentCode,
         Name: data.Name,
-        Email: data.email,
-        Phone: data.phone,
-        Religion: data.religion || "",
-        StateOfMind: data.stateOfMind || "",
+        StudentName: data.studentName,
+        Email: data.email || "",
+        Phone: "", // Add default or actual phone value
+        Religion: data.religion || "1",
+        StateOfMind: data.stateOfMind || "1",
         GradeId: data.gradeId,
         SchoolId: data.schoolId,
-        SchoolName: "testSchool",
+        SchoolName: "", // Add default or actual school name value
         Password: data.password,
         Gender: Number(data.gender),
         Address: data.address || "",
@@ -95,9 +100,9 @@ export function RegisterStudentForm({
       console.log("Registration successful", response);
       navigate("/dashboard");
       setError(null);
-      if (onClose) onClose(); // Close the modal on success
+      if (onClose) onClose();
     } catch (err: any) {
-      setError(err.message || "Registration failed");
+      setError(err.Message || "Registration failed");
       console.error("Registration failed", err);
     } finally {
       setIsLoading(false);
@@ -118,6 +123,21 @@ export function RegisterStudentForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid grid-cols-2 gap-4 w-full"
         >
+          {/* Student Code field */}
+          <FormField
+            control={form.control}
+            name="studentCode"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Student Code</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter student code" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           {/* User Name field */}
           <FormField
             control={form.control}
@@ -133,15 +153,15 @@ export function RegisterStudentForm({
             )}
           />
 
-          {/* Phone field */}
+          {/* Student Name field */}
           <FormField
             control={form.control}
-            name="phone"
+            name="studentName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone</FormLabel>
+                <FormLabel>Student Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter phone number" {...field} />
+                  <Input placeholder="Enter student name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -249,15 +269,18 @@ export function RegisterStudentForm({
                   <select
                     {...field}
                     className="w-full border rounded p-2 bg-gray-100"
+                    disabled={isLoadingSchools}
                   >
                     <option value="">Select school</option>
-                    {schoolOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    {schools.map((school) => (
+                      <option key={school.Id} value={school.Id}>
+                        {school.NameEn}
                       </option>
                     ))}
                   </select>
                 </FormControl>
+                {isLoadingSchools && <p>Loading schools...</p>}
+                {schoolError && <p className="text-red-500">{schoolError}</p>}
                 <FormMessage />
               </FormItem>
             )}
@@ -321,11 +344,7 @@ export function RegisterStudentForm({
           {/* Submit button */}
           <div className="col-span-2">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading
-                ? "Submitting..."
-                : isEdit
-                ? "Update Student"
-                : "Register Student"}
+              {isLoading ? "Submitting..." : "Save"}
             </Button>
           </div>
         </form>

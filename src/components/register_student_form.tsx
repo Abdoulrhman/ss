@@ -53,7 +53,6 @@ interface RegisterStudentFormProps {
 }
 
 export function RegisterStudentForm({
-  isEdit = false,
   studentData = null,
   onClose,
 }: RegisterStudentFormProps) {

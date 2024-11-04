@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import apiInstance from "./axiosInstance";
 
 // Login function
@@ -232,15 +233,121 @@ export const registerStudent = async (data: {
   }
 };
 
-export const searchSchools = async (keyword: string = "", page: number = 1, size: number = 20) => {
+//Schools APIs
+
+export const addSchool = async (data: {
+  NameAr: string;
+  NameEn: string;
+  CityId: string;
+}) => {
+  try {
+    const response = await apiInstance.post("/School/Add", data);
+    return response.data; // Return the successful response data
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to add school");
+  }
+};
+
+export const updateSchool = async (data: {
+  Id: string;
+  NameAr: string;
+  NameEn: string;
+  CityId: string;
+}) => {
+  try {
+    const response = await apiInstance.put("/School/Update", data);
+    return response.data; // Return the successful response data
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to update school");
+  }
+};
+
+export const deleteSchool = async (schoolId: string) => {
+  try {
+    const response = await apiInstance.delete("/School/Delete", {
+      params: { Id: schoolId },
+    });
+    return response.data; // Assuming success data is returned here
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to delete school");
+  }
+};
+
+export const searchSchools = async (
+  keyword: string = "",
+  page: number = 1,
+  size: number = 20
+) => {
   try {
     const response = await apiInstance.post("/School/Search", {
       keyword, // The keyword to search for schools, if any
-      page,    // Optional: page number for pagination
-      size     // Optional: page size for pagination
+      page, // Optional: page number for pagination
+      size, // Optional: page size for pagination
     });
     return response.data; // Return the response data containing the search results
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for schools");
+  }
+};
+
+// grades APIs
+export const addGrade = async (data: { NameAr: string; NameEn: string }) => {
+  try {
+    const response = await apiInstance.post("/Grade/Add", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to add grade");
+  }
+};
+
+// Update an existing grade
+export const updateGrade = async (data: {
+  Id: string;
+  NameAr: string;
+  NameEn: string;
+}) => {
+  try {
+    const response = await apiInstance.put("/Grade/Update", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to update grade");
+  }
+};
+
+// Delete a grade by ID
+export const deleteGrade = async (id: string) => {
+  try {
+    const response = await apiInstance.delete("/Grade/Delete", {
+      params: { id },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to delete grade");
+  }
+};
+
+// Get grade by ID
+export const getGradeById = async (id: string) => {
+  try {
+    const response = await apiInstance.get(`/Grade/GetById`, {
+      params: { id },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to fetch grade by ID");
+  }
+};
+
+// Search for grades
+export const searchGrades = async (keyword = "", page = 1, size = 20) => {
+  try {
+    const response = await apiInstance.post("/Grade/Search", {
+      keyword,
+      page,
+      size,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to search for grades");
   }
 };

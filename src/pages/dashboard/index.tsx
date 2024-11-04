@@ -22,7 +22,9 @@ import { UsersTable } from "./admin/users_table";
 import { AddFileStudentForm } from "@/components/add-file-student";
 import { SchoolAdminUsersTable } from "./school-admin/school_admin_table";
 import { StudentUsersTable } from "./student/students_table";
+import { SchoolTable } from "./schools/school_table";
 import { useNavigate } from "react-router-dom";
+import { GradesTable } from "./grades/grade_table";
 
 // Sidebar component
 function Sidebar({
@@ -38,20 +40,17 @@ function Sidebar({
 }) {
   return (
     <>
-      {/* Sidebar container */}
       <div
         className={`fixed inset-y-0 left-0 z-40 w-64 h-screen bg-black p-4 flex flex-col gap-4 transform ${
           isOpen ? "translate-x-0" : "-translate-x-64"
         } transition-transform duration-300 ease-in-out`}
       >
-        {/* Close button */}
         <button className="text-white text-right mb-4" onClick={toggleSidebar}>
           <ArrowLeft className="h-6 w-6" />
         </button>
 
-        <h1 className="text-white font-bold text-lg">Sidebar</h1>
+        <h1 className="text-white font-bold text-lg">SSP</h1>
 
-        {/* Users Tab */}
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "addAdmin"
@@ -63,7 +62,6 @@ function Sidebar({
           Admin Users
         </button>
 
-        {/* School Admins Tab */}
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "schoolAdmin"
@@ -74,7 +72,7 @@ function Sidebar({
         >
           School Admins
         </button>
-        {/* Student Users Tab */}
+
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "studentUsers"
@@ -86,7 +84,6 @@ function Sidebar({
           Student
         </button>
 
-        {/* Add File Student Tab */}
         <button
           className={`text-left p-2 rounded-lg ${
             activeTab === "addFileStudent"
@@ -97,9 +94,30 @@ function Sidebar({
         >
           Add File Student
         </button>
+
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "schools"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("schools")}
+        >
+          Schools
+        </button>
+
+        <button
+          className={`text-left p-2 rounded-lg ${
+            activeTab === "grades"
+              ? "bg-gray-700 text-white"
+              : "hover:bg-gray-800 text-gray-400"
+          }`}
+          onClick={() => setActiveTab("grades")}
+        >
+          Grades
+        </button>
       </div>
 
-      {/* Open button - Stays on screen when sidebar is closed */}
       {!isOpen && (
         <button
           className="fixed top-4 left-4 z-50 bg-black text-white p-2 rounded-full"
@@ -120,7 +138,6 @@ export default function Dashboard() {
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const route = useNavigate();
 
-  // Close the sidebar by default on small screens
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
@@ -130,13 +147,8 @@ export default function Dashboard() {
       }
     };
 
-    // Initial check
     handleResize();
-
-    // Listen for window resize events
     window.addEventListener("resize", handleResize);
-
-    // Clean up event listener on component unmount
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -144,12 +156,10 @@ export default function Dashboard() {
     console.log("Logout clicked");
     route("/");
     localStorage.removeItem("token");
-
   };
 
   return (
     <>
-      {/* Apply ml-64 when sidebar is open */}
       <header
         className={`flex h-16 shrink-0 items-center gap-2 border-b px-4 justify-between transition-all duration-300 ${
           isSidebarOpen ? "ml-64" : "ml-0"
@@ -174,6 +184,10 @@ export default function Dashboard() {
                     ? "School Admins"
                     : activeTab === "studentUsers"
                     ? "Student"
+                    : activeTab === "schools"
+                    ? "Schools"
+                    : activeTab === "grades"
+                    ? "Grades"
                     : "Other Dashboard Tab"}
                 </BreadcrumbPage>
               </BreadcrumbItem>
@@ -181,13 +195,11 @@ export default function Dashboard() {
           </Breadcrumb>
         </div>
 
-        {/* Avatar and Dropdown Menu on the right */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
               <AvatarImage src="https://github.com/username.png" alt="User" />
-              <AvatarFallback>U</AvatarFallback>{" "}
-              {/* Fallback in case image fails */}
+              <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={10}>
@@ -202,7 +214,6 @@ export default function Dashboard() {
       </header>
 
       <div className="flex">
-        {/* Sidebar */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -210,13 +221,11 @@ export default function Dashboard() {
           toggleSidebar={toggleSidebar}
         />
 
-        {/* Main content */}
         <div
           className={`flex flex-1 flex-col gap-4 p-4 transition-all duration-300 ${
             isSidebarOpen ? "ml-64" : "ml-0"
           }`}
         >
-          {/* Conditional rendering based on active tab */}
           {activeTab === "addFileStudent" ? (
             <>
               <h1 className="text-2xl font-bold mb-4">Add File Student</h1>
@@ -239,6 +248,14 @@ export default function Dashboard() {
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
               />
+            </>
+          ) : activeTab === "schools" ? (
+            <>
+              <SchoolTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
+            </>
+          ) : activeTab === "grades" ? (
+            <>
+              <GradesTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
             </>
           ) : (
             <>

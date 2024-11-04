@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Pencil, Trash } from "lucide-react";
 import { getAllUsers, deleteUser } from "@/api/adminApis"; // API calls for school admins
 import { AddEditSchoolAdminModal } from "./add_school_admin_modal";
@@ -10,7 +17,10 @@ interface SchoolAdminUsersTableProps {
   setModalOpen: (open: boolean) => void;
 }
 
-export function SchoolAdminUsersTable({ modalOpen, setModalOpen }: SchoolAdminUsersTableProps) {
+export function SchoolAdminUsersTable({
+  modalOpen,
+  setModalOpen,
+}: SchoolAdminUsersTableProps) {
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +96,9 @@ export function SchoolAdminUsersTable({ modalOpen, setModalOpen }: SchoolAdminUs
       {!isLoading && users.length === 0 && (
         <div className="text-center py-10">
           <h2 className="text-xl font-semibold">No School Admins Found</h2>
-          <p className="text-gray-500">Get started by adding a new school admin.</p>
+          <p className="text-gray-500">
+            Get started by adding a new school admin.
+          </p>
         </div>
       )}
 

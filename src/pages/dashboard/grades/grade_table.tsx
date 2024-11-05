@@ -17,17 +17,13 @@ import {
 } from "@/api/adminApis"; // Replace with actual path
 import { AddEditGradeModal } from "./add_grade_modal";
 
-interface GradesTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function GradesTable({ modalOpen, setModalOpen }: GradesTableProps) {
+export function GradesTable() {
   const [grades, setGrades] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const fetchGrades = async () => {
     setIsLoading(true);

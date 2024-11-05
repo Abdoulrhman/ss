@@ -27,16 +27,19 @@ const FormSchema = z
     }),
     email: z.string().optional(),
     phone: z.string().optional(),
-    birthDate: z.string().refine(
-      (data) => {
-        if (!data) return true; // Allow empty birthDate
-        const date = new Date(data);
-        return date instanceof Date && !isNaN(date.getTime());
-      },
-      {
-        message: "Please enter a valid date.",
-      }
-    ).optional(),
+    birthDate: z
+      .string()
+      .refine(
+        (data) => {
+          if (!data) return true; // Allow empty birthDate
+          const date = new Date(data);
+          return date instanceof Date && !isNaN(date.getTime());
+        },
+        {
+          message: "Please enter a valid date.",
+        }
+      )
+      .optional(),
     gender: z.enum(["0", "1"]).optional(), // 0 for Male, 1 for Female
     password: z.string().min(6, {
       message: "Password must be at least 6 characters.",
@@ -49,7 +52,6 @@ const FormSchema = z
     path: ["confirmPassword"],
     message: "Passwords do not match",
   });
-
 
 interface RegisterFormProps {
   isEdit?: boolean; // true if editing, false if adding
@@ -91,19 +93,20 @@ export function RegisterForm({
           name: data.name,
           phone: data.phone || "",
           email: data.email || "",
-          birthDate: data.birthDate ? new Date(data.birthDate).toISOString() : "",
+          birthDate: data.birthDate
+            ? new Date(data.birthDate).toISOString()
+            : "",
           gender: Number(data.gender),
           password: data.password,
         });
         console.log("Registration successful", response);
-        navigate("/dashboard");
+        navigate("/dashboard/users");
       }
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {
-      
       if (err.Message) {
-               setError(err.Message);
+        setError(err.Message);
       } else {
         setError("Operation failed");
       }

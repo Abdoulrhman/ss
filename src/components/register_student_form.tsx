@@ -3,7 +3,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -28,20 +35,28 @@ const gradeOptions = [
 
 // Schema to validate the student registration form
 const FormSchema = z.object({
-  studentCode: z.string().regex(/^[a-zA-Z0-9]+$/, { message: "Student Code must be alphanumeric." }).min(1, { message: "Student Code is required." }),
+  studentCode: z
+    .string()
+    .regex(/^[a-zA-Z0-9]+$/, { message: "Student Code must be alphanumeric." })
+    .min(1, { message: "Student Code is required." }),
   Name: z
     .string()
     .min(2, { message: "Name must be at least 2 characters." })
     .regex(/^[a-zA-Z0-9]+$/, {
-      message: "Name must contain only letters and numbers, no spaces or special characters.",
+      message:
+        "Name must contain only letters and numbers, no spaces or special characters.",
     }),
-  studentName: z.string().min(2, { message: "Student Name must be at least 2 characters." }),
+  studentName: z
+    .string()
+    .min(2, { message: "Student Name must be at least 2 characters." }),
   email: z.string().optional(),
   religion: z.string().optional(),
   stateOfMind: z.string().optional(),
   gradeId: z.string().min(1, { message: "Please select a valid grade." }),
   schoolId: z.string().min(1, { message: "Please select a valid school." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters." }),
   gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
   address: z.string().optional(),
 });
@@ -56,7 +71,11 @@ export function RegisterStudentForm({
   studentData = null,
   onClose,
 }: RegisterStudentFormProps) {
-  const { schools, isLoading: isLoadingSchools, error: schoolError } = useSchoolSearch();
+  const {
+    schools,
+    isLoading: isLoadingSchools,
+    error: schoolError,
+  } = useSchoolSearch();
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -97,7 +116,7 @@ export function RegisterStudentForm({
         Address: data.address || "",
       });
       console.log("Registration successful", response);
-      navigate("/dashboard");
+      navigate("/dashboard/users");
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {

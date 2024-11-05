@@ -12,20 +12,13 @@ import { Pencil, Trash } from "lucide-react";
 import { getAllUsers, deleteUser } from "@/api/adminApis"; // API calls for school admins
 import { AddEditSchoolAdminModal } from "./add_school_admin_modal";
 
-interface SchoolAdminUsersTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function SchoolAdminUsersTable({
-  modalOpen,
-  setModalOpen,
-}: SchoolAdminUsersTableProps) {
+export function SchoolAdminUsersTable() {
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null); // Store the selected user for editing
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
+  const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
   // Fetch school admins of type 3 on component load
   useEffect(() => {

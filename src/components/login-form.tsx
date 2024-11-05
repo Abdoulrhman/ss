@@ -46,7 +46,7 @@ export function LoginForm() {
       // Call the login function with the email and password
       const response = await adminLogin(data.email, data.password);
       console.log("Login successful", response);
-      navigate("/dashboard");
+      navigate("/dashboard/users");
       setError(null);
     } catch (error: any) {
       console.error("Login failed", error);

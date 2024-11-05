@@ -14,6 +14,7 @@ export const adminLogin = async (email: string, password: string) => {
     // Store the token in localStorage
     if (token) {
       localStorage.setItem("token", "Bearer " + token);
+      localStorage.setItem("user", JSON.stringify(response.data.Data));
     }
 
     return response.data; // Assuming the response contains user data or token
@@ -352,11 +353,8 @@ export const searchGrades = async (keyword = "", page = 1, size = 20) => {
   }
 };
 
-
 // Levels APIs
-export const searchLevels = async (  keyword = "",
-  page = 1,
-  size = 20) => {
+export const searchLevels = async (keyword = "", page = 1, size = 20) => {
   try {
     const response = await apiInstance.post("/Level/Search", {
       keyword,
@@ -367,14 +365,17 @@ export const searchLevels = async (  keyword = "",
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for grades");
   }
-}
-
+};
 
 export const addLevel = async (data: { NameAr: string; NameEn: string }) => {
   return await apiInstance.post("/Level/Add", data);
 };
 
-export const updateLevel = async (data: { Id: string; NameAr: string; NameEn: string }) => {
+export const updateLevel = async (data: {
+  Id: string;
+  NameAr: string;
+  NameEn: string;
+}) => {
   return await apiInstance.put("/Level/Update", data);
 };
 
@@ -396,7 +397,7 @@ export const searchSubjects = async (keyword = "", page = 1, size = 20) => {
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for subjects");
   }
-}
+};
 
 // Add subject
 export const addSubject = async (data: { NameAr: string; NameEn: string }) => {
@@ -404,7 +405,11 @@ export const addSubject = async (data: { NameAr: string; NameEn: string }) => {
 };
 
 // Update subject
-export const updateSubject = async (data: { Id: string; NameAr: string; NameEn: string }) => {
+export const updateSubject = async (data: {
+  Id: string;
+  NameAr: string;
+  NameEn: string;
+}) => {
   return await apiInstance.put("/Subject/Update", data);
 };
 
@@ -413,4 +418,47 @@ export const deleteSubject = async (id: string) => {
   return await apiInstance.delete("/Subject/Delete", {
     params: { id },
   });
+};
+export const updateUserProfile = async (data: {
+  UserName: string;
+  Image?: File | null;
+}) => {
+  try {
+    // Create a new FormData object
+    const formData = new FormData();
+    formData.append("UserName", data.UserName); // Append UserName
+
+    // Check if an image file is provided and append it
+    if (data.Image) {
+      formData.append("Image", data.Image);
+    }
+
+    // Send the POST request with multipart/form-data content type
+    const response = await apiInstance.post(
+      "/Account/UpdateUserProfile",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Set content type
+        },
+      }
+    );
+
+    return response.data; // Return the response data on success
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to update user profile");
+  }
+};
+
+export const changePassword = async (data: {
+  CurrentPassword: string;
+  NewPassword: string;
+  ConfirmPassword: string;
+}) => {
+  try {
+    const response = await apiInstance.put("/Account/ChangePassword", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to change password");
+  }
 };

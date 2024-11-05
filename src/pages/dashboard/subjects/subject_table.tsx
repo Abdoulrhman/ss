@@ -1,22 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Pencil, Trash } from "lucide-react";
-import { searchSubjects, addSubject, updateSubject, deleteSubject } from "@/api/adminApis"; // Adjust as necessary
+import {
+  searchSubjects,
+  addSubject,
+  updateSubject,
+  deleteSubject,
+} from "@/api/adminApis"; // Adjust as necessary
 import { AddEditSubjectModal } from "./add_subject_modal";
 
-interface SubjectsTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function SubjectsTable({ modalOpen, setModalOpen }: SubjectsTableProps) {
+export function SubjectsTable() {
   const [subjects, setSubjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     fetchSubjects();
@@ -47,7 +54,9 @@ export function SubjectsTable({ modalOpen, setModalOpen }: SubjectsTableProps) {
   };
 
   const handleDeleteSubject = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this subject?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this subject?"
+    );
     if (confirmed) {
       try {
         await deleteSubject(id);

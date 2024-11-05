@@ -1,21 +1,23 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Pencil, Trash } from "lucide-react";
 import { getAllUsers, deleteUser, downloadStudentsFile } from "@/api/adminApis"; // Import download function
 import { AddEditStudentModal } from "./add_student_modal";
 
-interface StudentUsersTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function StudentUsersTable({ modalOpen, setModalOpen }: StudentUsersTableProps) {
+export function StudentUsersTable() {
   const [students, setStudents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<any>(null); // Store the selected student for editing
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
+  const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
   // Fetch students of type 1 on component load
   useEffect(() => {
@@ -50,11 +52,15 @@ export function StudentUsersTable({ modalOpen, setModalOpen }: StudentUsersTable
 
   // Handle delete action
   const handleDelete = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this student?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this student?"
+    );
     if (confirmed) {
       try {
         await deleteUser(id);
-        setStudents((prevStudents) => prevStudents.filter((student) => student.Id !== id));
+        setStudents((prevStudents) =>
+          prevStudents.filter((student) => student.Id !== id)
+        );
       } catch (error) {
         console.error("Error deleting student", error);
       }
@@ -89,9 +95,7 @@ export function StudentUsersTable({ modalOpen, setModalOpen }: StudentUsersTable
 
       {/* Download Button */}
       <div className="mb-4">
-        <Button  onClick={handleDownload}>
-          Download Student File
-        </Button>
+        <Button onClick={handleDownload}>Download Student File</Button>
       </div>
 
       {isLoading && <p>Loading students...</p>}

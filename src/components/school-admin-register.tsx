@@ -23,16 +23,21 @@ const FormSchema = z
   .object({
     schoolId: z.string().min(1, { message: "School ID is required." }),
     name: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters." })
-    .regex(/^[a-zA-Z0-9]+$/, {
-      message: "Name must contain only letters and numbers, no spaces or special characters.",
-    }),
+      .string()
+      .min(2, { message: "Name must be at least 2 characters." })
+      .regex(/^[a-zA-Z0-9]+$/, {
+        message:
+          "Name must contain only letters and numbers, no spaces or special characters.",
+      }),
     phone: z.string().optional(),
     email: z.string().optional(),
     gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
-    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
-    confirmPassword: z.string().min(6, { message: "Confirm Password must be at least 6 characters." }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters." }),
+    confirmPassword: z
+      .string()
+      .min(6, { message: "Confirm Password must be at least 6 characters." }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -80,7 +85,7 @@ export function RegisterSchoolAdminForm({
         Password: data.password, // Include password
       });
       console.log("School Admin Registration successful", response);
-      navigate("/dashboard");
+      navigate("/dashboard/users");
       if (onClose) onClose();
       setError(null);
     } catch (err: any) {
@@ -118,7 +123,9 @@ export function RegisterSchoolAdminForm({
                     {...field}
                     disabled={isLoading}
                   >
-                    <option value="" disabled>Select a school</option>
+                    <option value="" disabled>
+                      Select a school
+                    </option>
                     {schools.map((school) => (
                       <option key={school.Id} value={school.Id}>
                         {school.NameEn}

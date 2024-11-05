@@ -11,17 +11,13 @@ import { Pencil, Trash } from "lucide-react"; // Icons for edit and delete
 import { AddEditAdminModal } from "./add_admin_modal"; // Import AddEditAdminModal
 import { getAllUsers, deleteUser } from "@/api/adminApis"; // API calls for getting and deleting users
 
-interface UsersTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function UsersTable({ modalOpen, setModalOpen }: UsersTableProps) {
+export function UsersTable() {
   const [users, setUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null); // Store selected user for editing
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
+  const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
   // Fetch users of type 2 on component load
   useEffect(() => {

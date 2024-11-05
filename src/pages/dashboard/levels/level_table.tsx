@@ -23,12 +23,13 @@ interface LevelsTableProps {
   setModalOpen: (open: boolean) => void;
 }
 
-export function LevelsTable({ modalOpen, setModalOpen }: LevelsTableProps) {
+export function LevelsTable() {
   const [levels, setLevels] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLevels();
@@ -59,11 +60,15 @@ export function LevelsTable({ modalOpen, setModalOpen }: LevelsTableProps) {
   };
 
   const handleDeleteLevel = async (id: string) => {
-    const confirmed = window.confirm("Are you sure you want to delete this level?");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this level?"
+    );
     if (confirmed) {
       try {
         await deleteLevel(id);
-        setLevels((prevLevels) => prevLevels.filter((level) => level.Id !== id));
+        setLevels((prevLevels) =>
+          prevLevels.filter((level) => level.Id !== id)
+        );
       } catch (error: any) {
         setError("Failed to delete the level. Please try again.");
       }
@@ -92,7 +97,7 @@ export function LevelsTable({ modalOpen, setModalOpen }: LevelsTableProps) {
       </div>
 
       {isLoading && <p>Loading levels...</p>}
-      {error && <Alert >{error}</Alert>}
+      {error && <Alert>{error}</Alert>}
 
       <Table>
         <TableHeader>
@@ -109,10 +114,18 @@ export function LevelsTable({ modalOpen, setModalOpen }: LevelsTableProps) {
               <TableCell>{level.NameEn}</TableCell>
               <TableCell>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleEditLevel(level)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEditLevel(level)}
+                  >
                     <Pencil className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteLevel(level.Id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteLevel(level.Id)}
+                  >
                     <Trash className="w-4 h-4" />
                   </Button>
                 </div>

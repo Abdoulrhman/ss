@@ -17,17 +17,13 @@ import {
 } from "@/api/adminApis";
 import { AddEditSchoolModal } from "./add_school_modal";
 
-interface SchoolTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
-export function SchoolTable({ modalOpen, setModalOpen }: SchoolTableProps) {
+export function SchoolTable() {
   const [schools, setSchools] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const fetchSchools = async () => {
     setIsLoading(true);

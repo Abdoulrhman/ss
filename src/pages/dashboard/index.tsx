@@ -25,6 +25,8 @@ import { StudentUsersTable } from "./student/students_table";
 import { SchoolTable } from "./schools/school_table";
 import { useNavigate } from "react-router-dom";
 import { GradesTable } from "./grades/grade_table";
+import { LevelsTable } from "./levels/level_table";
+import { SubjectsTable } from "./subjects/subject_table";
 
 // Sidebar component
 function Sidebar({
@@ -116,6 +118,26 @@ function Sidebar({
         >
           Grades
         </button>
+        <button
+  className={`text-left p-2 rounded-lg ${
+    activeTab === "levels"
+      ? "bg-gray-700 text-white"
+      : "hover:bg-gray-800 text-gray-400"
+  }`}
+  onClick={() => setActiveTab("levels")}
+>
+  Levels
+</button>
+<button
+  className={`text-left p-2 rounded-lg ${
+    activeTab === "subjects"
+      ? "bg-gray-700 text-white"
+      : "hover:bg-gray-800 text-gray-400"
+  }`}
+  onClick={() => setActiveTab("subjects")}
+>
+  Subjects
+</button>
       </div>
 
       {!isOpen && (
@@ -257,11 +279,18 @@ export default function Dashboard() {
             <>
               <GradesTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
             </>
-          ) : (
+          ) : activeTab === "levels" ? (
             <>
-              <h1 className="text-2xl font-bold mb-4">Other Dashboard Tab</h1>
+              <LevelsTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
             </>
-          )}
+          ) : activeTab === "subjects" ? (
+            <>
+               <SubjectsTable modalOpen={modalOpen} setModalOpen={setModalOpen} />
+            </>
+          ) : (
+            <h1>Other Dashboard Tab</h1>
+          )
+            }
         </div>
       </div>
     </>

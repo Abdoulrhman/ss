@@ -67,7 +67,7 @@ export const registerSchoolAdmin = async (data: {
 // Get all school admins with type = 3
 export const getAllSchoolAdmins = async () => {
   try {
-    const response = await apiInstance.post("/api/Account/Search", {
+    const response = await apiInstance.post("/Account/Search", {
       Type: 3,
     });
     return response.data;
@@ -350,4 +350,67 @@ export const searchGrades = async (keyword = "", page = 1, size = 20) => {
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for grades");
   }
+};
+
+
+// Levels APIs
+export const searchLevels = async (  keyword = "",
+  page = 1,
+  size = 20) => {
+  try {
+    const response = await apiInstance.post("/Level/Search", {
+      keyword,
+      page,
+      size,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to search for grades");
+  }
+}
+
+
+export const addLevel = async (data: { NameAr: string; NameEn: string }) => {
+  return await apiInstance.post("/Level/Add", data);
+};
+
+export const updateLevel = async (data: { Id: string; NameAr: string; NameEn: string }) => {
+  return await apiInstance.put("/Level/Update", data);
+};
+
+export const deleteLevel = async (id: string) => {
+  return await apiInstance.delete(`/Level/Delete`, {
+    params: { Id: id },
+  });
+};
+
+// Subject APIs
+export const searchSubjects = async (keyword = "", page = 1, size = 20) => {
+  try {
+    const response = await apiInstance.post("/Subject/Search", {
+      keyword,
+      page,
+      size,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to search for subjects");
+  }
+}
+
+// Add subject
+export const addSubject = async (data: { NameAr: string; NameEn: string }) => {
+  return await apiInstance.post("/Subject/Add", data);
+};
+
+// Update subject
+export const updateSubject = async (data: { Id: string; NameAr: string; NameEn: string }) => {
+  return await apiInstance.put("/Subject/Update", data);
+};
+
+// Delete subject
+export const deleteSubject = async (id: string) => {
+  return await apiInstance.delete("/Subject/Delete", {
+    params: { id },
+  });
 };

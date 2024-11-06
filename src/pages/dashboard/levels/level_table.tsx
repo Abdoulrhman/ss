@@ -18,11 +18,6 @@ import {
 import { AddEditLevelModal } from "./add_level_modal";
 import { Alert } from "@/components/ui/alert"; // Adjust the import if you have a custom Alert component
 
-interface LevelsTableProps {
-  modalOpen: boolean;
-  setModalOpen: (open: boolean) => void;
-}
-
 export function LevelsTable() {
   const [levels, setLevels] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);

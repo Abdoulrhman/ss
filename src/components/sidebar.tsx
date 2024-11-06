@@ -1,6 +1,16 @@
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+interface SidebarProps {
+  isOpen: boolean;
+
+  toggleSidebar: () => void;
+
+  activeTab: string;
+
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+}
+
 const tabRoutes: { [key: string]: string } = {
   "/dashboard/users": "addAdmin",
   "/dashboard/school-admins": "schoolAdmin",
@@ -12,13 +22,7 @@ const tabRoutes: { [key: string]: string } = {
   "/dashboard/subjects": "subjects",
 };
 
-function Sidebar({
-  isOpen,
-  toggleSidebar,
-}: {
-  isOpen: boolean;
-  toggleSidebar: () => void;
-}) {
+function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
 

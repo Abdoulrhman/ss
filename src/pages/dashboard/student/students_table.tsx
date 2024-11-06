@@ -116,7 +116,6 @@ export function StudentUsersTable() {
             <TableRow>
               <TableCell className="font-bold">Name</TableCell>
               <TableCell className="font-bold">Email</TableCell>
-              <TableCell className="font-bold">Phone</TableCell>
               <TableCell className="font-bold">Actions</TableCell>
             </TableRow>
           </TableHeader>
@@ -125,7 +124,6 @@ export function StudentUsersTable() {
               <TableRow key={student.Id}>
                 <TableCell>{student.Name}</TableCell>
                 <TableCell>{student.Email}</TableCell>
-                <TableCell>{student.Phone}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button

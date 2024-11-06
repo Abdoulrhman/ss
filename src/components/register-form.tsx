@@ -117,7 +117,7 @@ export function RegisterForm({
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-lg">
+    <div className="flex flex-col items-center w-full max-w-[70rem]">
       {error && (
         <Alert variant="destructive" className="w-full max-w-md mb-2">
           <AlertCircle className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function RegisterForm({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 w-full max-w-md"
+          className="space-y-6 w-full"
         >
           {/* Name field */}
           <FormField

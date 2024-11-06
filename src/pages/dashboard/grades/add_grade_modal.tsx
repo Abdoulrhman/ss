@@ -58,7 +58,7 @@ export function AddEditGradeModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-[70rem]">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Grade" : "Add New Grade"}</DialogTitle>
         </DialogHeader>

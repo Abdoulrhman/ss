@@ -1,6 +1,11 @@
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
@@ -40,18 +45,26 @@ export function AddEditSubjectModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-[70rem]">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit Subject" : "Add New Subject"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? "Edit Subject" : "Add New Subject"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div>
             <label>Arabic Name</label>
-            <Input {...form.register("NameAr")} placeholder="Enter Arabic Name" />
+            <Input
+              {...form.register("NameAr")}
+              placeholder="Enter Arabic Name"
+            />
           </div>
           <div>
             <label>English Name</label>
-            <Input {...form.register("NameEn")} placeholder="Enter English Name" />
+            <Input
+              {...form.register("NameEn")}
+              placeholder="Enter English Name"
+            />
           </div>
           <Button type="submit">
             {isEdit ? "Update Subject" : "Add Subject"}

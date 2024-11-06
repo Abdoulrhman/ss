@@ -77,7 +77,7 @@ export function AddEditSchoolModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-[70rem]">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit School" : "Add New School"}</DialogTitle>
         </DialogHeader>

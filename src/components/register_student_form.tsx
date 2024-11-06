@@ -128,7 +128,7 @@ export function RegisterStudentForm({
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-lg">
+    <div className="flex flex-col items-center w-full max-w-[70rem]">
       {error && (
         <Alert variant="destructive" className="w-full max-w-md mb-2">
           <AlertCircle className="h-4 w-4" />

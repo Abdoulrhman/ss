@@ -46,22 +46,26 @@ export function AddEditLevelModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-[70rem]">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit Level" : "Add New Level"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <div>
             <label>Arabic Name</label>
-            <Input {...form.register("NameAr")} placeholder="Enter Arabic Name" />
+            <Input
+              {...form.register("NameAr")}
+              placeholder="Enter Arabic Name"
+            />
           </div>
           <div>
             <label>English Name</label>
-            <Input {...form.register("NameEn")} placeholder="Enter English Name" />
+            <Input
+              {...form.register("NameEn")}
+              placeholder="Enter English Name"
+            />
           </div>
-          <Button type="submit">
-            {isEdit ? "Update Level" : "Add Level"}
-          </Button>
+          <Button type="submit">{isEdit ? "Update Level" : "Add Level"}</Button>
         </form>
       </DialogContent>
     </Dialog>

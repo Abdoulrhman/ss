@@ -26,15 +26,18 @@ export function AddEditStudentModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[70rem] w-full">
+      <DialogContent className="max-w-[70rem] w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
-        <RegisterStudentForm
-          isEdit={isEdit}
-          studentData={studentData}
-          onClose={onClose}
-        />
+        <div className="overflow-y-auto max-h-[calc(90vh-4rem)]">
+          {/* Content inside the modal */}
+          <RegisterStudentForm
+            isEdit={isEdit}
+            studentData={studentData}
+            onClose={onClose}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

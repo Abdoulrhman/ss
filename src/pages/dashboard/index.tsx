@@ -21,10 +21,22 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import Sidebar from "@/components/sidebar";
+import { baseURL } from "@/api/axiosInstance";
 
 export function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("addAdmin"); // Track active tab
+  const [profile, setProfile] = useState<{
+    Phone: string;
+    Email: string;
+    UserName: string;
+    Image: string | null;
+  }>({
+    Phone: "",
+    Email: "",
+    UserName: "",
+    Image: null,
+  });
   const route = useNavigate();
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
@@ -43,6 +55,18 @@ export function DashboardLayout() {
     route("/");
     localStorage.removeItem("token");
   };
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setProfile({
+        Phone: parsedUser.Phone,
+        Email: parsedUser.Email,
+        UserName: parsedUser.UserName,
+        Image: parsedUser.Image || null,
+      });
+    }
+  }, []);
 
   return (
     <>
@@ -70,7 +94,7 @@ export function DashboardLayout() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
-              <AvatarImage src="https://github.com/username.png" alt="User" />
+              <AvatarImage src={`${baseURL}/${profile.Image}`} alt="User" />
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>

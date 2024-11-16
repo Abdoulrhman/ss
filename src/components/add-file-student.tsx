@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { addFileStudent } from "@/api/adminApis"; // Import the API call function
+import { addFileStudent, downloadTemplate } from "@/api/adminApis";
 
 // Validation schema using Zod
 const FormSchema = z.object({
@@ -42,6 +42,21 @@ const schoolOptions = [
 ];
 
 export function AddFileStudentForm() {
+  const [isTemplateDownloading, setIsTemplateDownloading] = useState(false);
+
+  const handleTemplateDownload = async () => {
+    setIsTemplateDownloading(true);
+    try {
+      await downloadTemplate();
+      alert("Template downloaded successfully!");
+    } catch (error) {
+      console.error("Error downloading template:", error);
+      alert("Failed to download template. Please try again.");
+    } finally {
+      setIsTemplateDownloading(false);
+    }
+  };
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -78,112 +93,126 @@ export function AddFileStudentForm() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full max-w-lg">
-      {error && (
-        <Alert variant="destructive" className="w-full max-w-md mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {success && (
-        <Alert className="w-full max-w-md mb-4">
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
-
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 w-full max-w-md"
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
+      {/* Column 1: Form */}
+      <div className="flex flex-col items-start space-y-6">
+        <h2 className="text-xl font-bold">File Template</h2>
+        <Button
+          onClick={handleTemplateDownload}
+          disabled={isTemplateDownloading}
         >
-          {/* GradeId dropdown */}
-          <FormField
-            control={form.control}
-            name="gradeId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Grade</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Grade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {gradeOptions.map((grade) => (
-                        <SelectItem key={grade.id} value={grade.id}>
-                          {grade.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {isTemplateDownloading ? "Downloading..." : "Download Template"}
+        </Button>
+      </div>
 
-          {/* SchoolId dropdown */}
-          <FormField
-            control={form.control}
-            name="schoolId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>School</FormLabel>
-                <FormControl>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select School" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {schoolOptions.map((school) => (
-                        <SelectItem key={school.id} value={school.id}>
-                          {school.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      {/* Column 2: Download Template */}
+      <div>
+        {error && (
+          <Alert variant="destructive" className="w-full mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* File Upload field */}
-          <FormField
-            control={form.control}
-            name="studentFile"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Student File</FormLabel>
-                <FormControl>
-                  <Input
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files
-                        ? e.target.files[0]
-                        : undefined;
-                      field.onChange(file);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        {success && (
+          <Alert className="w-full mb-4">
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Uploading..." : "Upload File"}
-          </Button>
-        </form>
-      </Form>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 w-full"
+          >
+            {/* GradeId dropdown */}
+            <FormField
+              control={form.control}
+              name="gradeId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Grade</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gradeOptions.map((grade) => (
+                          <SelectItem key={grade.id} value={grade.id}>
+                            {grade.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* SchoolId dropdown */}
+            <FormField
+              control={form.control}
+              name="schoolId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select School" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schoolOptions.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* File Upload field */}
+            <FormField
+              control={form.control}
+              name="studentFile"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Student File</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files
+                          ? e.target.files[0]
+                          : undefined;
+                        field.onChange(file);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Submit Button */}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Uploading..." : "Upload File"}
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import axios from "axios";
 
+export const baseURL =
+  "https://sah-platform-api-egghayfcc4ddeuae.canadacentral-01.azurewebsites.net";
 // Create an axios instance
 const apiInstance = axios.create({
-  baseURL:
-    "https://sah-platform-api-egghayfcc4ddeuae.canadacentral-01.azurewebsites.net/api/",
+  baseURL: `${baseURL}/api/`,
   headers: {
     "Content-Type": "application/json",
   },

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateUserProfile, changePassword } from "@/api/adminApis";
 import { Upload } from "lucide-react"; // Importing the Upload icon
+import { baseURL } from "@/api/axiosInstance";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -120,7 +121,7 @@ const ProfilePage = () => {
               <div className="relative">
                 {profile.Image ? (
                   <img
-                    src={profile.Image}
+                    src={`${baseURL}/${profile.Image}`}
                     alt="Profile"
                     className="w-24 h-24 rounded-full border-2 border-gray-300"
                   />

@@ -14,7 +14,6 @@ import { useSchoolSearch } from "@/hooks/useSchoolSearch";
 export function StudentFilePage() {
   const methods = useForm(); // Use React Hook Form's `useForm`
   const { watch } = methods;
-  const [isTemplateDownloading, setIsTemplateDownloading] = useState(false);
   const [isStudentFileDownloading, setIsStudentFileDownloading] =
     useState(false);
 
@@ -51,20 +50,6 @@ export function StudentFilePage() {
       alert("Failed to download student file. Please try again.");
     } finally {
       setIsStudentFileDownloading(false);
-    }
-  };
-
-  // Handle template download
-  const handleTemplateDownload = async () => {
-    setIsTemplateDownloading(true);
-    try {
-      await downloadTemplate(); // Call template download API
-      alert("Template downloaded successfully!");
-    } catch (error) {
-      console.error("Error downloading template:", error);
-      alert("Failed to download template. Please try again.");
-    } finally {
-      setIsTemplateDownloading(false);
     }
   };
 
@@ -137,17 +122,6 @@ export function StudentFilePage() {
             {isStudentFileDownloading
               ? "Downloading..."
               : "Download Student File"}
-          </Button>
-        </div>
-
-        {/* Column 2: Download Template */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Download Template</h2>
-          <Button
-            onClick={handleTemplateDownload}
-            disabled={isTemplateDownloading}
-          >
-            {isTemplateDownloading ? "Downloading..." : "Download Template"}
           </Button>
         </div>
       </form>

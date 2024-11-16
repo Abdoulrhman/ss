@@ -26,7 +26,7 @@ export function AddEditAdminModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-[70rem]">
+      <DialogContent className="max-w-[70rem] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>

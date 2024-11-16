@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { downloadStudentsFile, downloadTemplate } from "@/api/adminApis";
+import { downloadStudentsFile } from "@/api/adminApis";
 import { useForm, FormProvider } from "react-hook-form";
 import {
   FormField,

@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input"; // For the search input
 import { Pencil, Trash } from "lucide-react"; // Icons for edit and delete
 import { AddEditAdminModal } from "./add_admin_modal"; // Import AddEditAdminModal
 import { getAllUsers, deleteUser } from "@/api/adminApis"; // API calls for getting and deleting users
@@ -19,22 +20,38 @@ export function UsersTable() {
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
   const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
-  // Fetch users of type 2 on component load
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getAllUsers(2); // Call the API to get users of type 2
-        setUsers(response.Data.Data); // Assuming response.Data.Data contains the list of users
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch users");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Search, sorting, and pagination state
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<number>(1); // 1 for ascending, -1 for descending
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10); // Fixed page size of 10 items per page
+  const [totalItems, setTotalItems] = useState(0); // Total number of items
 
+  // Fetch users
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllUsers(
+        2, // User type
+        page,
+        pageSize,
+        searchKeyword,
+        sortField,
+        sortOrder
+      );
+      setUsers(response.Data.Data || []); // Assuming response.Data.Data contains the list of users
+      setTotalItems(response.Data.Count || 0); // Use Count from the response for total items
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch users");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, pageSize, searchKeyword, sortField, sortOrder]);
 
   // Handle adding a user
   const handleAddUser = () => {
@@ -69,8 +86,28 @@ export function UsersTable() {
   // Close modal handler and refresh users after add/edit
   const closeModalAndRefresh = async () => {
     setModalOpen(false);
-    const response = await getAllUsers(2); // Refetch users after add/edit
-    setUsers(response.Data.Data);
+    fetchUsers(); // Refetch users after add/edit
+  };
+
+  // Handle sorting by column
+  const handleSort = (field: string) => {
+    setSortField(field);
+    setSortOrder(sortOrder === 1 ? -1 : 1); // Toggle sort order
+  };
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
   };
 
   return (
@@ -78,8 +115,14 @@ export function UsersTable() {
       {/* Header with Table Name and Add Button */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Users</h1>
-        <Button onClick={handleAddUser}>Add New Admin</Button>{" "}
-        {/* Add button */}
+        <div className="flex items-center space-x-4">
+          <Input
+            placeholder="Search by name or email"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+          <Button onClick={handleAddUser}>Add New Admin</Button>
+        </div>
       </div>
 
       {isLoading && <p>Loading users...</p>}
@@ -89,11 +132,25 @@ export function UsersTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableCell className="font-bold">Name</TableCell>
-            <TableCell className="font-bold">Email</TableCell>
-            <TableCell className="font-bold">Phone</TableCell>
-            <TableCell className="font-bold">Actions</TableCell>{" "}
-            {/* Actions column */}
+            <TableCell
+              className="font-bold cursor-pointer"
+              onClick={() => handleSort("Name")}
+            >
+              Name {sortField === "Name" && (sortOrder === 1 ? "↑" : "↓")}
+            </TableCell>
+            <TableCell
+              className="font-bold cursor-pointer"
+              onClick={() => handleSort("Email")}
+            >
+              Email {sortField === "Email" && (sortOrder === 1 ? "↑" : "↓")}
+            </TableCell>
+            <TableCell
+              className="font-bold cursor-pointer"
+              onClick={() => handleSort("Phone")}
+            >
+              Phone {sortField === "Phone" && (sortOrder === 1 ? "↑" : "↓")}
+            </TableCell>
+            <TableCell className="font-bold">Actions</TableCell>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -127,6 +184,27 @@ export function UsersTable() {
           ))}
         </TableBody>
       </Table>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          variant="secondary"
+        >
+          Previous
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          onClick={handleNextPage}
+          disabled={page >= totalPages}
+          variant="secondary"
+        >
+          Next
+        </Button>
+      </div>
 
       {/* Modal for adding/editing user */}
       {modalOpen && (

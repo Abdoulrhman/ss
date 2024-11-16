@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input"; // For the search input
 import { Pencil, Trash } from "lucide-react";
 import { getAllUsers, deleteUser } from "@/api/adminApis"; // API calls for school admins
 import { AddEditSchoolAdminModal } from "./add_school_admin_modal";
@@ -20,31 +21,47 @@ export function SchoolAdminUsersTable() {
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
   const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
-  // Fetch school admins of type 3 on component load
+  // Search, sorting, and pagination state
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<number>(1); // 1 for ascending, -1 for descending
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20); // Fixed page size
+  const [totalItems, setTotalItems] = useState(0); // Total number of items
+
+  // Fetch school admins
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllUsers(
+        3, // User type for school admins
+        page,
+        pageSize,
+        searchKeyword,
+        sortField,
+        sortOrder
+      );
+      setUsers(response.Data.Data || []); // Assuming response.Data.Data contains the list of users
+      setTotalItems(response.Data.Count || 0); // Use Count from response for total items
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch school admins");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getAllUsers(3); // Call the API to get school admins
-        setUsers(response.Data.Data); // Assuming response.Data.Data contains the list of users
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch school admins");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUsers();
-  }, []);
+  }, [page, pageSize, searchKeyword, sortField, sortOrder]);
 
-  // Handle add user
+  // Handle adding a user
   const handleAddUser = () => {
     setSelectedUser(null); // No user selected for add
     setIsEditMode(false); // Not in edit mode
     setModalOpen(true); // Open the modal
   };
 
-  // Handle edit action
+  // Handle editing a user
   const handleEdit = (user: any) => {
     setSelectedUser(user); // Set the user data for editing
     setIsEditMode(true); // We are in edit mode
@@ -69,17 +86,43 @@ export function SchoolAdminUsersTable() {
   // Close modal handler and refresh users after add/edit
   const closeModalAndRefresh = async () => {
     setModalOpen(false);
-    const response = await getAllUsers(3); // Refetch users after add/edit
-    setUsers(response.Data.Data);
+    fetchUsers(); // Refetch users after add/edit
+  };
+
+  // Handle sorting by column
+  const handleSort = (field: string) => {
+    setSortField(field);
+    setSortOrder(sortOrder === 1 ? -1 : 1); // Toggle sort order
+  };
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
   };
 
   return (
     <div className="w-full">
-      {/* Header with Table Name and Add Button */}
+      {/* Header with Table Name, Search, and Add Button */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">School Admins</h1>
-        <Button onClick={handleAddUser}>Add New School Admin</Button>{" "}
-        {/* Add button */}
+        <div className="flex items-center space-x-4">
+          <Input
+            placeholder="Search by name or email"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+          <Button onClick={handleAddUser}>Add New School Admin</Button>
+        </div>
       </div>
 
       {isLoading && <p>Loading school admins...</p>}
@@ -100,11 +143,25 @@ export function SchoolAdminUsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell className="font-bold">Name</TableCell>
-              <TableCell className="font-bold">Email</TableCell>
-              <TableCell className="font-bold">Phone</TableCell>
-              <TableCell className="font-bold">Actions</TableCell>{" "}
-              {/* Actions column */}
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("Name")}
+              >
+                Name {sortField === "Name" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("Email")}
+              >
+                Email {sortField === "Email" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("Phone")}
+              >
+                Phone {sortField === "Phone" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell className="font-bold">Actions</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -139,6 +196,27 @@ export function SchoolAdminUsersTable() {
           </TableBody>
         </Table>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          variant="secondary"
+        >
+          Previous
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          onClick={handleNextPage}
+          disabled={page >= totalPages}
+          variant="secondary"
+        >
+          Next
+        </Button>
+      </div>
 
       {/* Modal for adding/editing user */}
       {modalOpen && (

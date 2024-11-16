@@ -13,6 +13,7 @@ import { UsersTable } from "./pages/dashboard/admin/users_table";
 import { GradesTable } from "./pages/dashboard/grades/grade_table";
 import { LevelsTable } from "./pages/dashboard/levels/level_table";
 import ProfilePage from "./pages/dashboard/profile";
+import { StudentFilePage } from "./pages/dashboard/student/download_students";
 
 const App = () => {
   return (
@@ -31,6 +32,10 @@ const App = () => {
           element={<SchoolAdminUsersTable />}
         />
         <Route path="/dashboard/students" element={<StudentUsersTable />} />
+        <Route
+          path="/dashboard/students/download"
+          element={<StudentFilePage />}
+        />
         <Route path="/dashboard/schools" element={<SchoolTable />} />
         <Route path="/dashboard/grades" element={<GradesTable />} />
         <Route path="/dashboard/levels" element={<LevelsTable />} />

@@ -177,6 +177,63 @@ export const downloadStudentsFile = async (
     throw error.response?.data || new Error("File download failed");
   }
 };
+export const downloadTemplate = async () => {
+  try {
+    // Send a GET request to download the template
+    const response = await apiInstance.get(`/Account/DownloadTemplate`, {
+      responseType: "blob", // Set the response type to 'blob' to handle binary data
+    });
+
+    // Create a blob from the response data
+    const blob = new Blob([response.data], {
+      type: response.headers["content-type"],
+    });
+
+    // Create a download link for the blob
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // Get the filename from the response headers if available, or use a default name
+    const filename =
+      response.headers["content-disposition"]
+        ?.split("filename=")[1]
+        ?.replace(/['"]/g, "") || "template.xlsx";
+    link.download = filename;
+
+    // Programmatically click the link to trigger the download
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and remove the link element
+    link.remove();
+
+    return response.data; // Return the response data (optional)
+  } catch (error: any) {
+    console.error("Failed to download the template", error);
+    throw error.response?.data || new Error("Template download failed");
+  }
+};
+export const uploadStudentFile = async (formData: FormData) => {
+  try {
+    // Send a POST request to upload the student file
+    const response = await apiInstance.post(
+      `/Account/AddFileStudent`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data", // Ensure the correct content type
+        },
+      }
+    );
+
+    console.log("File uploaded successfully:", response.data);
+    return response.data; // Return the response data
+  } catch (error: any) {
+    console.error("Failed to upload the file", error);
+    throw error.response?.data || new Error("File upload failed");
+  }
+};
 
 export const deleteUser = async (userId: string) => {
   try {
@@ -195,15 +252,43 @@ export const getAllUsers = async (
   type: number,
   page = 1,
   size = 20,
-  keyword = ""
+  keyword = "",
+  sortField?: string,
+  sortOrder?: number,
+  filters?: Array<{
+    columnName: string;
+    filterValue: string;
+    filterOption: number;
+  }>
 ) => {
   try {
-    const response = await apiInstance.post("/Account/Search", {
-      Type: type, // Pass the type (e.g., 2 as in your screenshot)
-      page: page, // Optionally pass page number for pagination
-      Size: size, // Optionally pass the size for pagination
-      keyword: keyword, // Optionally pass a keyword for searching (email, name, etc.)
-    });
+    const requestBody: any = {
+      Type: type, // User type (e.g., SuperAdmin, Admin)
+      Page: page, // Page number for pagination
+      Size: size, // Number of results per page
+      Keyword: keyword, // Search keyword for filtering (e.g., user email or name)
+    };
+
+    // Add SortObj if sortField and sortOrder are provided
+    if (sortField && sortOrder !== undefined) {
+      requestBody.SortObj = {
+        FieldName: sortField,
+        SortOrder: sortOrder,
+      };
+    }
+
+    // Add FilterParams if filters are provided
+    if (filters && filters.length > 0) {
+      requestBody.FilterParams = filters.map(
+        ({ columnName, filterValue, filterOption }) => ({
+          ColumnName: columnName,
+          FilterValue: filterValue,
+          FilterOption: filterOption,
+        })
+      );
+    }
+
+    const response = await apiInstance.post("/Account/Search", requestBody);
 
     return response.data; // Return the successful response data containing the list of users
   } catch (error: any) {
@@ -239,7 +324,7 @@ export const registerStudent = async (data: {
 export const addSchool = async (data: {
   NameAr: string;
   NameEn: string;
-  CityId: string;
+  IsActive: boolean; // New property added
 }) => {
   try {
     const response = await apiInstance.post("/School/Add", data);
@@ -253,7 +338,7 @@ export const updateSchool = async (data: {
   Id: string;
   NameAr: string;
   NameEn: string;
-  CityId: string;
+  IsActive: boolean; // New property added
 }) => {
   try {
     const response = await apiInstance.put("/School/Update", data);
@@ -277,22 +362,47 @@ export const deleteSchool = async (schoolId: string) => {
 export const searchSchools = async (
   keyword: string = "",
   page: number = 1,
-  size: number = 20
+  size: number = 20,
+  sortField: string | null = null, // Optional: field to sort by
+  sortOrder: number | null = null, // Optional: sort order (1 for ascending, -1 for descending)
+  filters: { field: string; value: string }[] = [] // Optional: array of filters
 ) => {
   try {
-    const response = await apiInstance.post("/School/Search", {
-      keyword, // The keyword to search for schools, if any
-      page, // Optional: page number for pagination
-      size, // Optional: page size for pagination
-    });
+    const requestBody: any = {
+      keyword, // The keyword to search for schools
+      page, // Page number for pagination
+      size, // Page size for pagination
+    };
+
+    // Add sort object if sortField and sortOrder are provided
+    if (sortField && sortOrder !== null) {
+      requestBody.sortObj = {
+        FieldName: sortField,
+        SortOrder: sortOrder,
+      };
+    }
+
+    // Add filters if provided
+    if (filters.length > 0) {
+      requestBody.filterParams = filters.map((filter) => ({
+        ColumnName: filter.field,
+        FilterValue: filter.value,
+      }));
+    }
+
+    const response = await apiInstance.post("/School/Search", requestBody);
     return response.data; // Return the response data containing the search results
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for schools");
   }
 };
 
-// grades APIs
-export const addGrade = async (data: { NameAr: string; NameEn: string }) => {
+// Add a grade
+export const addGrade = async (data: {
+  NameAr: string;
+  NameEn: string;
+  IsActive: boolean; // Added IsActive
+}) => {
   try {
     const response = await apiInstance.post("/Grade/Add", data);
     return response.data;
@@ -306,6 +416,7 @@ export const updateGrade = async (data: {
   Id: string;
   NameAr: string;
   NameEn: string;
+  IsActive: boolean; // Added IsActive
 }) => {
   try {
     const response = await apiInstance.put("/Grade/Update", data);
@@ -340,88 +451,208 @@ export const getGradeById = async (id: string) => {
 };
 
 // Search for grades
-export const searchGrades = async (keyword = "", page = 1, size = 20) => {
+export const searchGrades = async (
+  keyword: string = "",
+  page: number = 1,
+  size: number = 20,
+  sortField: string | null = null, // Optional: field to sort by
+  sortOrder: number | null = null, // Optional: sort order (1 for ascending, -1 for descending)
+  filters: { field: string; value: string }[] = [] // Optional: array of filters
+) => {
   try {
-    const response = await apiInstance.post("/Grade/Search", {
-      keyword,
-      page,
-      size,
-    });
-    return response.data;
+    const requestBody: any = {
+      keyword, // The keyword to search for grades
+      page, // Page number for pagination
+      size, // Page size for pagination
+    };
+
+    // Add sort object if sortField and sortOrder are provided
+    if (sortField && sortOrder !== null) {
+      requestBody.sortObj = {
+        FieldName: sortField,
+        SortOrder: sortOrder,
+      };
+    }
+
+    // Add filters if provided
+    if (filters.length > 0) {
+      requestBody.filterParams = filters.map((filter) => ({
+        ColumnName: filter.field,
+        FilterValue: filter.value,
+      }));
+    }
+
+    const response = await apiInstance.post("/Grade/Search", requestBody);
+    return response.data; // Return the response data containing the search results
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for grades");
   }
 };
 
 // Levels APIs
-export const searchLevels = async (keyword = "", page = 1, size = 20) => {
+// Search Levels with sorting, pagination, and filters
+export const searchLevels = async (
+  keyword: string = "",
+  page: number = 1,
+  size: number = 20,
+  sortField: string | null = null,
+  sortOrder: number | null = null,
+  filters: { field: string; value: string }[] = []
+) => {
   try {
-    const response = await apiInstance.post("/Level/Search", {
+    const requestBody: any = {
       keyword,
       page,
       size,
-    });
+    };
+
+    if (sortField && sortOrder !== null) {
+      requestBody.sortObj = {
+        FieldName: sortField,
+        SortOrder: sortOrder,
+      };
+    }
+
+    if (filters.length > 0) {
+      requestBody.filterParams = filters.map((filter) => ({
+        ColumnName: filter.field,
+        FilterValue: filter.value,
+      }));
+    }
+
+    const response = await apiInstance.post("/Level/Search", requestBody);
     return response.data;
   } catch (error: any) {
-    throw error.response?.data || new Error("Failed to search for grades");
+    throw error.response?.data || new Error("Failed to search for levels");
   }
 };
 
-export const addLevel = async (data: { NameAr: string; NameEn: string }) => {
-  return await apiInstance.post("/Level/Add", data);
+// Add a new Level
+export const addLevel = async (data: {
+  NameAr: string;
+  NameEn: string;
+  IsActive: boolean;
+}) => {
+  try {
+    const response = await apiInstance.post("/Level/Add", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to add level");
+  }
 };
 
+// Update an existing Level
 export const updateLevel = async (data: {
   Id: string;
   NameAr: string;
   NameEn: string;
+  IsActive: boolean;
 }) => {
-  return await apiInstance.put("/Level/Update", data);
+  try {
+    const response = await apiInstance.put("/Level/Update", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to update level");
+  }
 };
 
+// Delete a Level by ID
 export const deleteLevel = async (id: string) => {
-  return await apiInstance.delete(`/Level/Delete`, {
-    params: { Id: id },
-  });
+  try {
+    const response = await apiInstance.delete("/Level/Delete", {
+      params: { Id: id },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to delete level");
+  }
 };
 
 // Subject APIs
-export const searchSubjects = async (keyword = "", page = 1, size = 20) => {
+
+// Search subjects with sorting, pagination, and filtering
+export const searchSubjects = async (
+  keyword: string = "",
+  page: number = 1,
+  size: number = 20,
+  sortField: string | null = null,
+  sortOrder: number | null = null,
+  filters: { field: string; value: string }[] = []
+) => {
   try {
-    const response = await apiInstance.post("/Subject/Search", {
+    const requestBody: any = {
       keyword,
       page,
       size,
-    });
+    };
+
+    if (sortField && sortOrder !== null) {
+      requestBody.sortObj = {
+        FieldName: sortField,
+        SortOrder: sortOrder,
+      };
+    }
+
+    if (filters.length > 0) {
+      requestBody.filterParams = filters.map((filter) => ({
+        ColumnName: filter.field,
+        FilterValue: filter.value,
+      }));
+    }
+
+    const response = await apiInstance.post("/Subject/Search", requestBody);
     return response.data;
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to search for subjects");
   }
 };
 
-// Add subject
-export const addSubject = async (data: { NameAr: string; NameEn: string }) => {
-  return await apiInstance.post("/Subject/Add", data);
+// Add a new subject
+export const addSubject = async (data: {
+  NameAr: string;
+  NameEn: string;
+  IsActive: boolean;
+}) => {
+  try {
+    const response = await apiInstance.post("/Subject/Add", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to add subject");
+  }
 };
 
-// Update subject
+// Update an existing subject
 export const updateSubject = async (data: {
   Id: string;
   NameAr: string;
   NameEn: string;
+  IsActive: boolean;
 }) => {
-  return await apiInstance.put("/Subject/Update", data);
+  try {
+    const response = await apiInstance.put("/Subject/Update", data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to update subject");
+  }
 };
 
-// Delete subject
+// Delete a subject by ID
 export const deleteSubject = async (id: string) => {
-  return await apiInstance.delete("/Subject/Delete", {
-    params: { id },
-  });
+  try {
+    const response = await apiInstance.delete(`/Subject/Delete`, {
+      params: { Id: id },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to delete subject");
+  }
 };
+
 export const updateUserProfile = async (data: {
   UserName: string;
   Image?: File | null;
+  Phone?: string;
+  Email?: string;
 }) => {
   try {
     // Create a new FormData object

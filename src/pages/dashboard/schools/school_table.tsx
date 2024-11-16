@@ -16,22 +16,38 @@ import {
   deleteSchool,
 } from "@/api/adminApis";
 import { AddEditSchoolModal } from "./add_school_modal";
+import { Input } from "@/components/ui/input"; // For search input
 
 export function SchoolTable() {
   const [schools, setSchools] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedSchool, setSelectedSchool] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Search, sorting, and pagination state
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<number>(1); // 1 for ascending, -1 for descending
+  const [page, setPage] = useState<number>(1);
+  const [pageSize] = useState<number>(10); // Fixed page size of 10 items per page
+  const [totalItems, setTotalItems] = useState<number>(0); // Total number of items
 
   const fetchSchools = async () => {
     setIsLoading(true);
     try {
-      const response = await searchSchools();
-      setSchools(response.Data.Data);
-    } catch (error) {
-      console.error("Error fetching schools", error);
+      const response = await searchSchools(
+        searchKeyword,
+        page,
+        pageSize,
+        sortField,
+        sortOrder
+      );
+      setSchools(response.Data.Data || []); // Assuming response.Data.Data contains the school list
+      setTotalItems(response.Data.Count || 0); // Use Count from the response for total items
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch schools");
     } finally {
       setIsLoading(false);
     }
@@ -39,7 +55,7 @@ export function SchoolTable() {
 
   useEffect(() => {
     fetchSchools();
-  }, []);
+  }, [searchKeyword, page, sortField, sortOrder]);
 
   const handleAddSchool = () => {
     setSelectedSchool(null);
@@ -63,8 +79,9 @@ export function SchoolTable() {
         setSchools((prevSchools) =>
           prevSchools.filter((school) => school.Id !== id)
         );
-      } catch (error) {
-        console.error("Error deleting school", error);
+        fetchSchools(); // Refresh the list after deletion
+      } catch (err) {
+        console.error("Error deleting school", err);
       }
     }
   };
@@ -77,8 +94,33 @@ export function SchoolTable() {
         await addSchool(data);
       }
       fetchSchools(); // Refresh the list after adding or updating
-    } catch (error) {
-      console.error("Error submitting form", error);
+      setModalOpen(false); // Close the modal
+    } catch (err) {
+      console.error("Error submitting form", err);
+    }
+  };
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 1 ? -1 : 1); // Toggle sort order
+    } else {
+      setSortField(field);
+      setSortOrder(1); // Set ascending order by default
+    }
+  };
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
     }
   };
 
@@ -86,18 +128,39 @@ export function SchoolTable() {
     <div className="w-full">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Schools</h1>
-        <Button onClick={handleAddSchool}>Add New School</Button>
+        <div className="flex space-x-4">
+          <Input
+            placeholder="Search by name"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+          <Button onClick={handleAddSchool}>Add New School</Button>
+        </div>
       </div>
 
       {isLoading && <p>Loading schools...</p>}
+      {error && <p className="text-red-500">{error}</p>}
       {!isLoading && schools.length === 0 && <p>No schools found.</p>}
 
       {schools.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell className="font-bold">Arabic Name</TableCell>
-              <TableCell className="font-bold">English Name</TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("NameAr")}
+              >
+                Arabic Name{" "}
+                {sortField === "NameAr" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("NameEn")}
+              >
+                English Name{" "}
+                {sortField === "NameEn" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell className="font-bold">Active</TableCell>
               <TableCell className="font-bold">Actions</TableCell>
             </TableRow>
           </TableHeader>
@@ -106,6 +169,7 @@ export function SchoolTable() {
               <TableRow key={school.Id}>
                 <TableCell>{school.NameAr}</TableCell>
                 <TableCell>{school.NameEn}</TableCell>
+                <TableCell>{school.IsActive ? "Yes" : "No"}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button
@@ -129,6 +193,27 @@ export function SchoolTable() {
           </TableBody>
         </Table>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          variant="secondary"
+        >
+          Previous
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          onClick={handleNextPage}
+          disabled={page >= totalPages}
+          variant="secondary"
+        >
+          Next
+        </Button>
+      </div>
 
       {/* Add/Edit School Modal */}
       {modalOpen && (

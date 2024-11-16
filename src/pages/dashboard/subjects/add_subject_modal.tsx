@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +10,21 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox"; // Assuming a UI Checkbox component exists
 
+// Validation schema
 const SubjectSchema = z.object({
-  NameAr: z.string().min(1, "Arabic Name is required"),
-  NameEn: z.string().min(1, "English Name is required"),
+  NameAr: z
+    .string()
+    .min(1, "Arabic Name is required")
+    .min(10, "Arabic Name must be at least 10 characters")
+    .max(250, "Arabic Name cannot exceed 250 characters"),
+  NameEn: z
+    .string()
+    .min(1, "English Name is required")
+    .min(10, "English Name must be at least 10 characters")
+    .max(250, "English Name cannot exceed 250 characters"),
+  IsActive: z.boolean(),
 });
 
 interface AddEditSubjectModalProps {
@@ -35,6 +47,7 @@ export function AddEditSubjectModal({
     defaultValues: {
       NameAr: subjectData?.NameAr || "",
       NameEn: subjectData?.NameEn || "",
+      IsActive: subjectData?.IsActive || false,
     },
   });
 
@@ -58,6 +71,11 @@ export function AddEditSubjectModal({
               {...form.register("NameAr")}
               placeholder="Enter Arabic Name"
             />
+            {form.formState.errors.NameAr && (
+              <p className="text-red-500">
+                {form.formState.errors.NameAr.message?.toString()}
+              </p>
+            )}
           </div>
           <div>
             <label>English Name</label>
@@ -65,6 +83,18 @@ export function AddEditSubjectModal({
               {...form.register("NameEn")}
               placeholder="Enter English Name"
             />
+            {form.formState.errors.NameEn && (
+              <p className="text-red-500">
+                {form.formState.errors.NameEn.message?.toString()}
+              </p>
+            )}
+          </div>
+          <div>
+            <label>Active Status</label>
+            <div className="flex items-center space-x-2">
+              <Checkbox {...form.register("IsActive")} />
+              <span>{form.watch("IsActive") ? "Active" : "Inactive"}</span>
+            </div>
           </div>
           <Button type="submit">
             {isEdit ? "Update Subject" : "Add Subject"}

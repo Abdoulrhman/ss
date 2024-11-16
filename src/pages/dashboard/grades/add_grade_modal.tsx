@@ -10,17 +10,20 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { useState } from "react";
 
+// Updated Schema with IsActive field
 const GradeSchema = z.object({
   NameAr: z
     .string()
     .min(10, "Arabic Name must be between 10 and 250 characters")
-    .max(250),
+    .max(250, "Arabic Name cannot exceed 250 characters"),
   NameEn: z
     .string()
     .min(10, "English Name must be between 10 and 250 characters")
-    .max(250),
+    .max(250, "English Name cannot exceed 250 characters"),
+  IsActive: z.boolean().optional(), // Optional boolean for IsActive
 });
 
 interface AddEditGradeModalProps {
@@ -39,18 +42,20 @@ export function AddEditGradeModal({
   onSubmit,
 }: AddEditGradeModalProps) {
   const [error, setError] = useState<string | null>(null);
+
   const form = useForm({
     resolver: zodResolver(GradeSchema),
     defaultValues: {
       NameAr: gradeData?.NameAr || "",
       NameEn: gradeData?.NameEn || "",
+      IsActive: gradeData?.IsActive || false,
     },
   });
 
   const handleSubmit = async (data: any) => {
     try {
       await onSubmit(data);
-      setOpen(false);
+      setOpen(false); // Close modal on success
     } catch (err: any) {
       setError(err.Message || "Operation failed");
     }
@@ -64,6 +69,7 @@ export function AddEditGradeModal({
         </DialogHeader>
         {error && <p className="text-red-500">{error}</p>}
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          {/* Arabic Name Field */}
           <div>
             <label>Arabic Name</label>
             <Input
@@ -77,6 +83,8 @@ export function AddEditGradeModal({
               </p>
             )}
           </div>
+
+          {/* English Name Field */}
           <div>
             <label>English Name</label>
             <Input
@@ -90,6 +98,16 @@ export function AddEditGradeModal({
               </p>
             )}
           </div>
+
+          {/* IsActive Field */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              {...form.register("IsActive")}
+              defaultChecked={gradeData?.IsActive || false}
+            />
+            <label className="font-medium">Is Active</label>
+          </div>
+
           <Button type="submit">{isEdit ? "Update Grade" : "Add Grade"}</Button>
         </form>
       </DialogContent>

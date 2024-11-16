@@ -7,8 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Pencil, Trash } from "lucide-react";
-import { getAllUsers, deleteUser, downloadStudentsFile } from "@/api/adminApis"; // Import download function
+import { getAllUsers, deleteUser } from "@/api/adminApis"; // Import download function
 import { AddEditStudentModal } from "./add_student_modal";
 
 export function StudentUsersTable() {
@@ -19,22 +20,38 @@ export function StudentUsersTable() {
   const [isEditMode, setIsEditMode] = useState(false); // Track if we are in edit mode
   const [modalOpen, setModalOpen] = useState(false); // Track if modal is open
 
-  // Fetch students of type 1 on component load
-  useEffect(() => {
-    const fetchStudents = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getAllUsers(4); // Call the API to get students
-        setStudents(response.Data.Data); // Assuming response.Data.Data contains the list of users
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch students");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Search, sorting, and pagination state
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<number>(1); // 1 for ascending, -1 for descending
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10); // Fixed page size
+  const [totalItems, setTotalItems] = useState(0); // Total number of items
 
+  // Fetch students
+  const fetchStudents = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllUsers(
+        4, // User type for students
+        page,
+        pageSize,
+        searchKeyword,
+        sortField,
+        sortOrder
+      );
+      setStudents(response.Data.Data || []); // Assuming response.Data.Data contains the list of students
+      setTotalItems(response.Data.Count || 0); // Use Count from the response for total items
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch students");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchStudents();
-  }, []);
+  }, [page, pageSize, searchKeyword, sortField, sortOrder]);
 
   // Handle add student
   const handleAddStudent = () => {
@@ -67,35 +84,46 @@ export function StudentUsersTable() {
     }
   };
 
-  // Handle download file action
-  const handleDownload = async () => {
-    try {
-      const gradeId = "d1ebe318-0a70-44ac-b244-768bdb3b974e"; // Example GradeId
-      const schoolId = "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7"; // Example SchoolId
-      await downloadStudentsFile(gradeId, schoolId); // Trigger download
-    } catch (error) {
-      console.error("Error downloading student file", error);
+  // Handle sorting by column
+  const handleSort = (field: string) => {
+    setSortField(field);
+    setSortOrder(sortOrder === 1 ? -1 : 1); // Toggle sort order
+  };
+
+  // Pagination controls
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
     }
   };
 
   // Close modal handler and refresh students after add/edit
   const closeModalAndRefresh = async () => {
     setModalOpen(false);
-    const response = await getAllUsers(1); // Refetch students after add/edit
-    setStudents(response.Data.Data);
+    fetchStudents(); // Refetch students after add/edit
   };
 
   return (
     <div className="w-full">
-      {/* Header with Table Name and Add Button */}
+      {/* Header with Table Name, Search, and Add Button */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Students</h1>
-        <Button onClick={handleAddStudent}>Add New Student</Button>
-      </div>
-
-      {/* Download Button */}
-      <div className="mb-4">
-        <Button onClick={handleDownload}>Download Student File</Button>
+        <div className="flex items-center space-x-4">
+          <Input
+            placeholder="Search by name or email"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+          <Button onClick={handleAddStudent}>Add New Student</Button>
+        </div>
       </div>
 
       {isLoading && <p>Loading students...</p>}
@@ -114,8 +142,18 @@ export function StudentUsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell className="font-bold">Name</TableCell>
-              <TableCell className="font-bold">Email</TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("Name")}
+              >
+                Name {sortField === "Name" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("Email")}
+              >
+                Email {sortField === "Email" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
               <TableCell className="font-bold">Actions</TableCell>
             </TableRow>
           </TableHeader>
@@ -147,6 +185,27 @@ export function StudentUsersTable() {
           </TableBody>
         </Table>
       )}
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <Button
+          onClick={handlePrevPage}
+          disabled={page === 1}
+          variant="secondary"
+        >
+          Previous
+        </Button>
+        <span>
+          Page {page} of {totalPages}
+        </span>
+        <Button
+          onClick={handleNextPage}
+          disabled={page >= totalPages}
+          variant="secondary"
+        >
+          Next
+        </Button>
+      </div>
 
       {/* Modal for adding/editing student */}
       {modalOpen && (

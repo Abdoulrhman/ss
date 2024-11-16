@@ -10,9 +10,10 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox"; // Checkbox component for IsActive
 import { useState } from "react";
 
-// Define the schema with character length constraints
+// Define the schema with character length constraints and IsActive
 const SchoolSchema = z.object({
   NameAr: z
     .string()
@@ -24,7 +25,7 @@ const SchoolSchema = z.object({
     .min(10, "English Name must be at least 10 characters")
     .max(250, "English Name cannot exceed 250 characters")
     .nonempty("English Name is required"),
-  CityId: z.string().optional(),
+  IsActive: z.boolean(), // New property to validate IsActive as a boolean
 });
 
 interface AddEditSchoolModalProps {
@@ -48,7 +49,7 @@ export function AddEditSchoolModal({
     defaultValues: {
       NameAr: schoolData?.NameAr || "",
       NameEn: schoolData?.NameEn || "",
-      CityId: schoolData?.CityId || "",
+      IsActive: schoolData?.IsActive ?? true, // Default to true for new schools
     },
   });
 
@@ -112,15 +113,16 @@ export function AddEditSchoolModal({
             )}
           </div>
 
-          {/* City ID Field */}
-          <div>
-            <label>City ID</label>
-            <Input {...form.register("CityId")} placeholder="Enter City ID" />
-            {form.formState.errors.CityId && (
-              <p className="text-red-500">
-                {form.formState.errors.CityId?.message?.toString()}
-              </p>
-            )}
+          {/* IsActive Field */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              {...form.register("IsActive")}
+              checked={form.watch("IsActive")}
+              onCheckedChange={(checked) =>
+                form.setValue("IsActive", checked === true)
+              }
+            />
+            <label>Active</label>
           </div>
 
           <Button type="submit">

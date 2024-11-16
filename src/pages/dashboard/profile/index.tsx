@@ -2,21 +2,20 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateUserProfile, changePassword } from "@/api/adminApis";
+import { Upload } from "lucide-react"; // Importing the Upload icon
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [profile, setProfile] = useState<{
-    Name: string;
     Phone: string;
     Email: string;
-    Image: string | null;
     UserName: string;
+    Image: string | null;
   }>({
-    Name: "",
     Phone: "",
     Email: "",
-    Image: null,
     UserName: "",
+    Image: null,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -29,11 +28,10 @@ const ProfilePage = () => {
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setProfile({
-        Name: parsedUser.Name,
         Phone: parsedUser.Phone,
         Email: parsedUser.Email,
+        UserName: parsedUser.UserName,
         Image: parsedUser.Image || null,
-        UserName: parsedUser.Name,
       });
     }
   }, []);
@@ -49,11 +47,13 @@ const ProfilePage = () => {
   const handleProfileUpdate = async () => {
     try {
       await updateUserProfile({
+        Phone: profile.Phone,
+        Email: profile.Email,
         UserName: profile.UserName,
         Image: imageFile || null,
       });
 
-      const updatedProfile = { ...profile, Image: profile.Image };
+      const updatedProfile = { ...profile };
       localStorage.setItem("user", JSON.stringify(updatedProfile));
 
       alert("Profile updated successfully!");
@@ -87,113 +87,127 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">My Profile</h1>
+    <div className="container mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
 
-      <div className="flex mb-4">
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "profile" ? "bg-gray-300 font-bold" : "bg-gray-100"
-          }`}
-          onClick={() => setActiveTab("profile")}
-        >
-          Profile Data
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "changePassword"
-              ? "bg-gray-300 font-bold"
-              : "bg-gray-100"
-          }`}
-          onClick={() => setActiveTab("changePassword")}
-        >
-          Change Password
-        </button>
-      </div>
+      <div className="bg-white shadow-md rounded-lg p-6 max-w-2xl mx-auto">
+        {/* Tabs */}
+        <div className="flex mb-6">
+          <button
+            className={`px-4 py-2 ${
+              activeTab === "profile" ? "bg-gray-300 font-bold" : "bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("profile")}
+          >
+            Profile
+          </button>
+          <button
+            className={`px-4 py-2 ${
+              activeTab === "changePassword"
+                ? "bg-gray-300 font-bold"
+                : "bg-gray-100"
+            }`}
+            onClick={() => setActiveTab("changePassword")}
+          >
+            Change Password
+          </button>
+        </div>
 
-      {activeTab === "profile" ? (
-        <div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <Input value={profile.Name} disabled />
-          </div>
+        {/* Profile Tab */}
+        {activeTab === "profile" ? (
+          <div>
+            <div className="flex items-center mb-6">
+              <div className="relative">
+                {profile.Image ? (
+                  <img
+                    src={profile.Image}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full border-2 border-gray-300"
+                  />
+                ) : (
+                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-gray-500" />
+                  </div>
+                )}
+                <input
+                  id="imageInput"
+                  type="file"
+                  accept="image/*"
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  onChange={handleImageChange}
+                />
+              </div>
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Phone</label>
-            <Input value={profile.Phone} disabled />
-          </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Phone</label>
+              <Input value={profile.Phone} disabled />
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <Input value={profile.Email} disabled />
-          </div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <Input value={profile.Email} disabled />
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">UserName</label>
-            <Input
-              value={profile.UserName}
-              onChange={(e) =>
-                setProfile((prev) => ({ ...prev, UserName: e.target.value }))
-              }
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Profile Image
-            </label>
-            {profile.Image ? (
-              <img
-                src={profile.Image}
-                alt="Profile"
-                className="w-24 h-24 rounded-full mb-2"
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Username</label>
+              <Input
+                value={profile.UserName}
+                onChange={(e) =>
+                  setProfile((prev) => ({
+                    ...prev,
+                    UserName: e.target.value,
+                  }))
+                }
               />
-            ) : (
-              <div className="w-24 h-24 bg-gray-200 rounded-full mb-2" />
-            )}
-            <Input type="file" accept="image/*" onChange={handleImageChange} />
-          </div>
+            </div>
 
-          <Button onClick={handleProfileUpdate}>Update Profile</Button>
-        </div>
-      ) : (
-        <div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Current Password
-            </label>
-            <Input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
+            <Button onClick={handleProfileUpdate} className="w-full">
+              Save Changes
+            </Button>
           </div>
+        ) : (
+          // Change Password Tab
+          <div>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">
+                Current Password
+              </label>
+              <Input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              New Password
-            </label>
-            <Input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">
+                New Password
+              </label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">
+                Confirm Password
+              </label>
+              <Input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+
+            <Button onClick={handleChangePassword} className="w-full">
+              Change Password
+            </Button>
           </div>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
-              Confirm Password
-            </label>
-            <Input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </div>
-
-          <Button onClick={handleChangePassword}>Change Password</Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

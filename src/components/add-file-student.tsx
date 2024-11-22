@@ -141,7 +141,7 @@ export function AddFileStudentForm() {
                     {isLoadingGrades ? (
                       <div>Loading grades...</div> // Loading state
                     ) : gradeError ? (
-                      <div className="text-red-500">{gradeError.message}</div> // Error state
+                      <div className="text-red-500">{gradeError}</div> // Error state
                     ) : (
                       <Select
                         onValueChange={field.onChange}
@@ -175,7 +175,7 @@ export function AddFileStudentForm() {
                     {isLoadingSchools ? (
                       <div>Loading schools...</div> // Loading state
                     ) : schoolError ? (
-                      <div className="text-red-500">{schoolError.message}</div> // Error state
+                      <div className="text-red-500">{schoolError}</div> // Error state
                     ) : (
                       <Select
                         onValueChange={field.onChange}

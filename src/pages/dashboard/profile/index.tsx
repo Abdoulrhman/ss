@@ -3,19 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateUserProfile, changePassword } from "@/api/adminApis";
 import { Upload } from "lucide-react"; // Importing the Upload icon
-import { baseURL } from "@/api/axiosInstance";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [profile, setProfile] = useState<{
     Phone: string;
     Email: string;
-    UserName: string;
+    Name: string;
     Image: string | null;
   }>({
     Phone: "",
     Email: "",
-    UserName: "",
+    Name: "",
     Image: null,
   });
 
@@ -31,7 +30,7 @@ const ProfilePage = () => {
       setProfile({
         Phone: parsedUser.Phone,
         Email: parsedUser.Email,
-        UserName: parsedUser.UserName,
+        Name: parsedUser.Name,
         Image: parsedUser.Image || null,
       });
     }
@@ -39,22 +38,42 @@ const ProfilePage = () => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
-      const fileURL = URL.createObjectURL(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file); // Update the image file for upload
+
+      // Generate a preview URL for the uploaded image
+      const fileURL = URL.createObjectURL(file);
+
+      // Update the profile state with the new image preview
       setProfile((prev) => ({ ...prev, Image: fileURL }));
     }
   };
 
   const handleProfileUpdate = async () => {
     try {
-      await updateUserProfile({
-        Phone: profile.Phone,
-        Email: profile.Email,
-        UserName: profile.UserName,
-        Image: imageFile || null,
-      });
+      // Create a FormData object to handle file uploads
+      const formData = new FormData();
+      formData.append("Name", profile.Name); // Add Name
+      formData.append("Phone", profile.Phone); // Add Phone
+      formData.append("Email", profile.Email); // Add Email
 
-      const updatedProfile = { ...profile };
+      if (imageFile) {
+        formData.append("Image", imageFile); // Add Image
+      }
+
+      // Make the API call with FormData
+      const response = await updateUserProfile(formData);
+
+      // Assuming the API returns the updated profile data
+      const updatedProfile = {
+        ...profile,
+        Image: response.Image || profile.Image,
+      };
+
+      // Update the local profile state
+      setProfile(updatedProfile);
+
+      // Update localStorage
       localStorage.setItem("user", JSON.stringify(updatedProfile));
 
       alert("Profile updated successfully!");
@@ -121,7 +140,11 @@ const ProfilePage = () => {
               <div className="relative">
                 {profile.Image ? (
                   <img
-                    src={`${baseURL}/${profile.Image}`}
+                    src={
+                      profile.Image && !profile.Image.startsWith("blob:")
+                        ? `https://sah-platform-api-egghayfcc4ddeuae.canadacentral-01.azurewebsites.net/${profile.Image}`
+                        : profile.Image // Use the blob URL for the preview
+                    }
                     alt="Profile"
                     className="w-24 h-24 rounded-full border-2 border-gray-300"
                   />
@@ -153,11 +176,11 @@ const ProfilePage = () => {
             <div className="mb-6">
               <label className="block text-sm font-medium mb-1">Username</label>
               <Input
-                value={profile.UserName}
+                value={profile.Name}
                 onChange={(e) =>
                   setProfile((prev) => ({
                     ...prev,
-                    UserName: e.target.value,
+                    Name: e.target.value,
                   }))
                 }
               />

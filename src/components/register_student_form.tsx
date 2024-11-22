@@ -116,7 +116,7 @@ export function RegisterStudentForm({
         Address: data.address || "",
       });
       console.log("Registration successful", response);
-      navigate("/dashboard/users");
+      navigate("/dashboard/students");
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {

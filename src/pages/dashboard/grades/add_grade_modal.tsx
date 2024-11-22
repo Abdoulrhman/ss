@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,11 +17,11 @@ import { useState } from "react";
 const GradeSchema = z.object({
   NameAr: z
     .string()
-    .min(10, "Arabic Name must be between 10 and 250 characters")
+    .min(3, "Arabic Name must be between 3 and 250 characters")
     .max(250, "Arabic Name cannot exceed 250 characters"),
   NameEn: z
     .string()
-    .min(10, "English Name must be between 10 and 250 characters")
+    .min(3, "English Name must be between 3 and 250 characters")
     .max(250, "English Name cannot exceed 250 characters"),
   IsActive: z.boolean().optional(), // Optional boolean for IsActive
 });
@@ -101,11 +101,21 @@ export function AddEditGradeModal({
 
           {/* IsActive Field */}
           <div className="flex items-center space-x-2">
-            <Checkbox
-              {...form.register("IsActive")}
-              defaultChecked={gradeData?.IsActive || false}
+            <Controller
+              name="IsActive"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={field.value} // Use `field.value` for controlled behavior
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    } // Convert to boolean
+                  />
+                  <label className="font-medium">Is Active</label>
+                </div>
+              )}
             />
-            <label className="font-medium">Is Active</label>
           </div>
 
           <Button type="submit">{isEdit ? "Update Grade" : "Add Grade"}</Button>

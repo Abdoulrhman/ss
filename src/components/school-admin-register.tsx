@@ -21,20 +21,29 @@ import { useSchoolSearch } from "@/hooks/useSchoolSearch";
 // Schema to validate the registration form
 const FormSchema = z
   .object({
-    schoolId: z.string().min(1, { message: "School ID is required." }),
+    schoolId: z.string().nonempty({ message: "School ID is required." }),
     name: z
       .string()
-      .min(2, { message: "Name must be at least 2 characters." })
+      .min(10, { message: "Name must be at least 10 characters." })
+      .max(250, { message: "Name cannot exceed 250 characters." })
       .regex(/^[a-zA-Z0-9]+$/, {
         message:
           "Name must contain only letters and numbers, no spaces or special characters.",
       }),
-    phone: z.string().optional(),
-    email: z.string().optional(),
-    gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
+    phone: z
+      .string()
+      .nonempty({ message: "Phone is required." })
+      .min(10, { message: "Phone number must be at least 10 digits." })
+      .max(12, { message: "Phone number cannot exceed 12 digits." }),
+    email: z
+      .string()
+      .nonempty({ message: "Email is required." })
+      .email({ message: "Invalid email address." }),
+    gender: z.enum(["0", "1"], { message: "Gender is required." }), // 0 for Male, 1 for Female
     password: z
       .string()
-      .min(6, { message: "Password must be at least 6 characters." }),
+      .min(6, { message: "Password must be at least 6 characters." })
+      .max(100, { message: "Password cannot exceed 100 characters." }),
     confirmPassword: z
       .string()
       .min(6, { message: "Confirm Password must be at least 6 characters." }),
@@ -85,7 +94,7 @@ export function RegisterSchoolAdminForm({
         Password: data.password, // Include password
       });
       console.log("School Admin Registration successful", response);
-      navigate("/dashboard/users");
+      navigate("/dashboard/school-admins");
       if (onClose) onClose();
       setError(null);
     } catch (err: any) {

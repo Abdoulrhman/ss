@@ -22,6 +22,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { addFileStudent, downloadTemplate } from "@/api/adminApis";
+import { useSchoolSearch } from "@/hooks/useSchoolSearch";
+import { useGradeSearch } from "@/hooks/useGradesSearch";
 
 // Validation schema using Zod
 const FormSchema = z.object({
@@ -33,16 +35,20 @@ const FormSchema = z.object({
 });
 
 // Sample Grade and School Data with fixed IDs
-const gradeOptions = [
-  { id: "d1ebe318-0a70-44ac-b244-768bdb3b974e", name: "Grade 1" },
-];
-
-const schoolOptions = [
-  { id: "9a8c7dd1-f3fe-4de5-8d31-07e8bb64a3b7", name: "School 1 " },
-];
 
 export function AddFileStudentForm() {
   const [isTemplateDownloading, setIsTemplateDownloading] = useState(false);
+  // Fetch schools and grades using hooks
+  const {
+    schools,
+    isLoading: isLoadingSchools,
+    error: schoolError,
+  } = useSchoolSearch();
+  const {
+    grades,
+    isLoading: isLoadingGrades,
+    error: gradeError,
+  } = useGradeSearch();
 
   const handleTemplateDownload = async () => {
     setIsTemplateDownloading(true);
@@ -93,7 +99,7 @@ export function AddFileStudentForm() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
+    <div className="grid grid-cols-2 gap-8 w-full  mx-auto">
       {/* Column 1: Form */}
       <div className="flex flex-col items-start space-y-6">
         <h2 className="text-xl font-bold">File Template</h2>
@@ -125,7 +131,6 @@ export function AddFileStudentForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 w-full"
           >
-            {/* GradeId dropdown */}
             <FormField
               control={form.control}
               name="gradeId"
@@ -133,28 +138,33 @@ export function AddFileStudentForm() {
                 <FormItem>
                   <FormLabel>Grade</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Grade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {gradeOptions.map((grade) => (
-                          <SelectItem key={grade.id} value={grade.id}>
-                            {grade.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {isLoadingGrades ? (
+                      <div>Loading grades...</div> // Loading state
+                    ) : gradeError ? (
+                      <div className="text-red-500">{gradeError.message}</div> // Error state
+                    ) : (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Grade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {grades?.map((grade) => (
+                            <SelectItem key={grade.Id} value={grade.Id}>
+                              {grade.NameEn} {/* Display English name */}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* SchoolId dropdown */}
             <FormField
               control={form.control}
               name="schoolId"
@@ -162,21 +172,27 @@ export function AddFileStudentForm() {
                 <FormItem>
                   <FormLabel>School</FormLabel>
                   <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select School" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {schoolOptions.map((school) => (
-                          <SelectItem key={school.id} value={school.id}>
-                            {school.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {isLoadingSchools ? (
+                      <div>Loading schools...</div> // Loading state
+                    ) : schoolError ? (
+                      <div className="text-red-500">{schoolError.message}</div> // Error state
+                    ) : (
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select School" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {schools?.map((school) => (
+                            <SelectItem key={school.Id} value={school.Id}>
+                              {school.NameEn} {/* Display English name */}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

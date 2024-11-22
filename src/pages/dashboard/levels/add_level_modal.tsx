@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,11 +15,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 const LevelSchema = z.object({
   NameAr: z
     .string()
-    .min(10, "Arabic Name must be at least 10 characters")
+    .min(3, "Arabic Name must be at least 3 characters")
     .max(250, "Arabic Name cannot exceed 250 characters"),
   NameEn: z
     .string()
-    .min(10, "English Name must be at least 10 characters")
+    .min(3, "English Name must be at least 3 characters")
     .max(250, "English Name cannot exceed 250 characters"),
   IsActive: z.boolean(),
 });
@@ -85,11 +85,22 @@ export function AddEditLevelModal({
             )}
           </div>
           <div>
-            <label>Active Status</label>
-            <div className="flex items-center space-x-2">
-              <Checkbox {...form.register("IsActive")} />
-              <span>{form.watch("IsActive") ? "Active" : "Inactive"}</span>
-            </div>
+            <label>Active Status</label>s
+            <Controller
+              name="IsActive"
+              control={form.control}
+              render={({ field }) => (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={field.value} // Use `field.value` for controlled behavior
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked === true)
+                    } // Convert to boolean
+                  />
+                  <label className="font-medium">Is Active</label>
+                </div>
+              )}
+            />
           </div>
           <Button type="submit">{isEdit ? "Update Level" : "Add Level"}</Button>
         </form>

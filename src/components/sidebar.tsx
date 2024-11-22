@@ -55,7 +55,7 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         }`}
         onClick={() => handleTabClick("/dashboard/users")}
       >
-        Admin Users
+        Platform Admins
       </button>
 
       <button
@@ -77,7 +77,7 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         }`}
         onClick={() => handleTabClick("/dashboard/students")}
       >
-        Student
+        Student Data
       </button>
 
       <button
@@ -88,7 +88,7 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         }`}
         onClick={() => handleTabClick("/dashboard/students/download")}
       >
-        Student File Download
+        Download Student Data
       </button>
 
       <button
@@ -99,7 +99,7 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         }`}
         onClick={() => handleTabClick("/dashboard/add-file-student")}
       >
-        Add File Student
+        Import Student Data
       </button>
 
       <button

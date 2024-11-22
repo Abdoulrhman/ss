@@ -45,6 +45,31 @@ export const registerAccount = async (data: {
     throw error.response?.data || new Error("Registration failed"); // Handle the error
   }
 };
+export const updateAccount = async (data: {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+  birthDate: string;
+  gender: number;
+  note?: string; // Optional field for notes
+}) => {
+  try {
+    const response = await apiInstance.put("/Account/Edit", {
+      Id: data.id, // Include the ID for identifying the account
+      Name: data.name,
+      Phone: data.phone,
+      Email: data.email,
+      BirthDate: data.birthDate,
+      Gender: data.gender,
+      Note: data.note || "", // Send note if available, otherwise empty string
+    });
+    return response.data; // Return the successful response data
+  } catch (error: any) {
+    throw error.response?.data || new Error("Update failed"); // Handle the error
+  }
+};
+
 // Register new School Admin
 export const registerSchoolAdmin = async (data: {
   SchoolId: string;
@@ -648,33 +673,17 @@ export const deleteSubject = async (id: string) => {
   }
 };
 
-export const updateUserProfile = async (data: {
-  UserName: string;
-  Image?: File | null;
-  Phone?: string;
-  Email?: string;
-}) => {
+export const updateUserProfile = async (data: FormData) => {
   try {
-    // Create a new FormData object
-    const formData = new FormData();
-    formData.append("UserName", data.UserName); // Append UserName
-
-    // Check if an image file is provided and append it
-    if (data.Image) {
-      formData.append("Image", data.Image);
-    }
-
-    // Send the POST request with multipart/form-data content type
     const response = await apiInstance.post(
       "/Account/UpdateUserProfile",
-      formData,
+      data,
       {
         headers: {
           "Content-Type": "multipart/form-data", // Set content type
         },
       }
     );
-
     return response.data; // Return the response data on success
   } catch (error: any) {
     throw error.response?.data || new Error("Failed to update user profile");

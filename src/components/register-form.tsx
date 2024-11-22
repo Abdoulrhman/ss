@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { registerAccount } from "@/api/adminApis"; // Import the API call function
+import { registerAccount, updateAccount } from "@/api/adminApis"; // Import the API call function
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -22,35 +22,44 @@ import { useNavigate } from "react-router-dom";
 // Schema to validate the registration form
 const FormSchema = z
   .object({
-    name: z.string().min(2, {
-      message: "Name must be at least 2 characters.",
-    }),
-    email: z.string().optional(),
-    phone: z.string().optional(),
+    name: z
+      .string()
+      .min(10, { message: "Name must be at least 10 characters." })
+      .max(250, { message: "Name cannot exceed 250 characters." })
+      .refine((data) => !data.includes(" "), {
+        message: "Ussername cannot contain spaces.",
+      }),
+    email: z
+      .string()
+      .nonempty({ message: "Email is required." })
+      .email({ message: "Invalid email address." }),
+    phone: z
+      .string()
+      .nonempty({ message: "Phone is required." })
+      .min(10, { message: "Phone number must be at least 10 digits." })
+      .max(12, { message: "Phone number cannot exceed 12 digits." }),
     birthDate: z
       .string()
+      .nonempty("Birth date is required.") // Ensure the field is not empty
       .refine(
         (data) => {
-          if (!data) return true; // Allow empty birthDate
           const date = new Date(data);
           return date instanceof Date && !isNaN(date.getTime());
         },
-        {
-          message: "Please enter a valid date.",
-        }
-      )
-      .optional(),
-    gender: z.enum(["0", "1"]).optional(), // 0 for Male, 1 for Female
-    password: z.string().min(6, {
-      message: "Password must be at least 6 characters.",
-    }),
-    confirmPassword: z.string().min(6, {
-      message: "Confirm Password must be at least 6 characters.",
-    }),
+        { message: "Please enter a valid date." }
+      ),
+    gender: z.enum(["0", "1"], { message: "Gender is required." }), // 0 for Male, 1 for Female
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters." })
+      .max(100, { message: "Password cannot exceed 100 characters." }),
+    confirmPassword: z
+      .string()
+      .min(8, { message: "Confirm Password must be at least 8 characters." }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "Passwords do not match",
+    message: "Passwords do not match.",
   });
 
 interface RegisterFormProps {
@@ -87,8 +96,20 @@ export function RegisterForm({
     setIsLoading(true);
     try {
       if (isEdit) {
-        console.log("Editing Admin:", data);
+        // Handle edit (update)
+        const response = await updateAccount({
+          id: adminData?.Id || "", // Pass the existing admin ID for update
+          name: data.name,
+          phone: data.phone || "",
+          email: data.email || "",
+          birthDate: data.birthDate
+            ? new Date(data.birthDate).toISOString()
+            : "",
+          gender: Number(data.gender),
+        });
+        console.log("Update successful", response);
       } else {
+        // Handle add (register)
         const response = await registerAccount({
           name: data.name,
           phone: data.phone || "",
@@ -100,17 +121,17 @@ export function RegisterForm({
           password: data.password,
         });
         console.log("Registration successful", response);
-        navigate("/dashboard/users");
       }
       setError(null);
       if (onClose) onClose();
+      navigate("/dashboard/users");
     } catch (err: any) {
-      if (err.Message) {
-        setError(err.Message);
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
       } else {
         setError("Operation failed");
       }
-      console.error("Registration failed", err);
+      console.error("Error occurred:", err);
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +159,11 @@ export function RegisterForm({
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter name" {...field} />
+                  <Input
+                    placeholder="Enter name"
+                    {...field}
+                    autoComplete="off"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -153,7 +178,11 @@ export function RegisterForm({
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter phone number" {...field} />
+                  <Input
+                    placeholder="Enter phone number"
+                    {...field}
+                    autoComplete="off"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -168,7 +197,12 @@ export function RegisterForm({
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="Enter email" {...field} />
+                  <Input
+                    type="email"
+                    placeholder="Enter email"
+                    {...field}
+                    autoComplete="off"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -192,7 +226,7 @@ export function RegisterForm({
                           date ? date.toISOString() : ""
                         )
                       }
-                      placeholderText={new Date().toLocaleDateString()}
+                      placeholderText={"Select date"}
                       className="w-full border rounded p-2 bg-gray-100 text-gray-900 mt-1"
                     />
                   </FormControl>
@@ -235,6 +269,7 @@ export function RegisterForm({
                   <Input
                     type="password"
                     placeholder="Enter password"
+                    autoComplete="off"
                     {...field}
                   />
                 </FormControl>
@@ -254,6 +289,7 @@ export function RegisterForm({
                   <Input
                     type="password"
                     placeholder="Confirm password"
+                    autoComplete="off"
                     {...field}
                   />
                 </FormControl>

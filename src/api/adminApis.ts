@@ -29,7 +29,6 @@ export const registerAccount = async (data: {
   email: string;
   birthDate: string;
   gender: number;
-  password: string;
 }) => {
   try {
     const payload: any = {
@@ -37,7 +36,6 @@ export const registerAccount = async (data: {
       Phone: data.phone,
       Email: data.email,
       Gender: data.gender,
-      Password: data.password,
     };
 
     // Conditionally include BirthDate

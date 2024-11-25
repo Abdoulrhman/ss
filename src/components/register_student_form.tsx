@@ -109,12 +109,7 @@ export function RegisterStudentForm({
           StudentCode: data.studentCode,
           GradeId: data.gradeId,
           LevelId: data.levelId,
-          NonArab: studentData?.NonArab || false,
-          SenStudent: studentData?.SenStudent || false,
-          CitizenStudent: studentData?.CitizenStudent || false,
-          GT: studentData?.GT || false,
           SchoolId: data.schoolId,
-          TextPass: studentData?.TextPass || "",
         });
         console.log("Student updated successfully:", response);
       } else {

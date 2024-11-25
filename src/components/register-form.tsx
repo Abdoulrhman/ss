@@ -96,7 +96,6 @@ export function RegisterForm({
             ? new Date(data.birthDate).toISOString()
             : "",
           gender: Number(data.gender),
-          password: data.password,
         });
         console.log("Registration successful", response);
       }

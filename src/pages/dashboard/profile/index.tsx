@@ -53,7 +53,7 @@ const ProfilePage = () => {
     try {
       // Create a FormData object to handle file uploads
       const formData = new FormData();
-      formData.append("Name", profile.Name); // Add Name
+      formData.append("UserName", profile.Name); // Add Name
       formData.append("Phone", profile.Phone); // Add Phone
       formData.append("Email", profile.Email); // Add Email
 

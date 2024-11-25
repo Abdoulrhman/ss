@@ -9,7 +9,15 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useSchoolSearch } from "@/hooks/useSchoolSearch";
+import { useGradeSearch } from "@/hooks/useGradesSearch";
 
 export function StudentFilePage() {
   const methods = useForm(); // Use React Hook Form's `useForm`
@@ -17,19 +25,17 @@ export function StudentFilePage() {
   const [isStudentFileDownloading, setIsStudentFileDownloading] =
     useState(false);
 
-  // Fetch schools using hook
+  // Fetch schools and grades using hooks
   const {
     schools,
     isLoading: isLoadingSchools,
     error: schoolError,
   } = useSchoolSearch();
-
-  // Dummy grade options
-  const gradeOptions = [
-    { value: "grade1", label: "Grade 1" },
-    { value: "grade2", label: "Grade 2" },
-    { value: "grade3", label: "Grade 3" },
-  ];
+  const {
+    grades,
+    isLoading: isLoadingGrades,
+    error: gradeError,
+  } = useGradeSearch();
 
   const selectedGrade = watch("gradeId");
   const selectedSchool = watch("schoolId");
@@ -56,9 +62,10 @@ export function StudentFilePage() {
   return (
     <FormProvider {...methods}>
       <form className="container mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Column 1: Select School and Grade */}
+        {/* Column 1: Select Filters */}
         <div className="space-y-4">
           <h2 className="text-xl font-bold">Select Filters</h2>
+
           {/* Grade ID field */}
           <FormField
             control={methods.control}
@@ -67,17 +74,27 @@ export function StudentFilePage() {
               <FormItem>
                 <FormLabel>Grade</FormLabel>
                 <FormControl>
-                  <select
-                    {...field}
-                    className="w-full border rounded p-2 bg-gray-100"
-                  >
-                    <option value="">Select grade</option>
-                    {gradeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  {isLoadingGrades ? (
+                    <div>Loading grades...</div> // Loading state
+                  ) : gradeError ? (
+                    <div className="text-red-500">{gradeError}</div> // Error state
+                  ) : (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Grade" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {grades?.map((grade) => (
+                          <SelectItem key={grade.Id} value={grade.Id}>
+                            {grade.NameEn} {/* Display English name */}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -92,21 +109,28 @@ export function StudentFilePage() {
               <FormItem>
                 <FormLabel>School</FormLabel>
                 <FormControl>
-                  <select
-                    {...field}
-                    className="w-full border rounded p-2 bg-gray-100"
-                    disabled={isLoadingSchools}
-                  >
-                    <option value="">Select school</option>
-                    {schools.map((school) => (
-                      <option key={school.Id} value={school.Id}>
-                        {school.NameEn}
-                      </option>
-                    ))}
-                  </select>
+                  {isLoadingSchools ? (
+                    <div>Loading schools...</div> // Loading state
+                  ) : schoolError ? (
+                    <div className="text-red-500">{schoolError}</div> // Error state
+                  ) : (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select School" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schools?.map((school) => (
+                          <SelectItem key={school.Id} value={school.Id}>
+                            {school.NameEn} {/* Display English name */}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </FormControl>
-                {isLoadingSchools && <p>Loading schools...</p>}
-                {schoolError && <p className="text-red-500">{schoolError}</p>}
                 <FormMessage />
               </FormItem>
             )}

@@ -148,6 +148,21 @@ export function StudentUsersTable() {
               >
                 Name {sortField === "Name" && (sortOrder === 1 ? "↑" : "↓")}
               </TableCell>
+
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("StudentCode")}
+              >
+                StudentCode{" "}
+                {sortField === "StudentCode" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
+              <TableCell
+                className="font-bold cursor-pointer"
+                onClick={() => handleSort("GenderName")}
+              >
+                GenderName{" "}
+                {sortField === "GenderName" && (sortOrder === 1 ? "↑" : "↓")}
+              </TableCell>
               <TableCell
                 className="font-bold cursor-pointer"
                 onClick={() => handleSort("Email")}
@@ -161,6 +176,8 @@ export function StudentUsersTable() {
             {students.map((student) => (
               <TableRow key={student.Id}>
                 <TableCell>{student.Name}</TableCell>
+                <TableCell>{student.StudentCode}</TableCell>
+                <TableCell>{student.GenderName}</TableCell>
                 <TableCell>{student.Email}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">

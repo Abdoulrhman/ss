@@ -32,19 +32,26 @@ export const registerAccount = async (data: {
   password: string;
 }) => {
   try {
-    const response = await apiInstance.post("/Account/Register", {
+    const payload: any = {
       Name: data.name,
       Phone: data.phone,
       Email: data.email,
-      BirthDate: data.birthDate,
       Gender: data.gender,
       Password: data.password,
-    });
+    };
+
+    // Conditionally include BirthDate
+    if (data.birthDate) {
+      payload.BirthDate = data.birthDate;
+    }
+
+    const response = await apiInstance.post("/Account/Register", payload);
     return response.data; // Return the successful response data
   } catch (error: any) {
     throw error.response?.data || new Error("Registration failed"); // Handle the error
   }
 };
+
 export const updateAccount = async (data: {
   id: string;
   name: string;
@@ -55,15 +62,25 @@ export const updateAccount = async (data: {
   note?: string; // Optional field for notes
 }) => {
   try {
-    const response = await apiInstance.put("/Account/Edit", {
+    const payload: any = {
       Id: data.id, // Include the ID for identifying the account
       Name: data.name,
       Phone: data.phone,
       Email: data.email,
-      BirthDate: data.birthDate,
       Gender: data.gender,
-      Note: data.note || "", // Send note if available, otherwise empty string
-    });
+    };
+
+    // Conditionally include BirthDate
+    if (data.birthDate) {
+      payload.BirthDate = data.birthDate;
+    }
+
+    // Conditionally include Note
+    if (data.note) {
+      payload.Note = data.note;
+    }
+
+    const response = await apiInstance.put("/Account/Edit", payload);
     return response.data; // Return the successful response data
   } catch (error: any) {
     throw error.response?.data || new Error("Update failed"); // Handle the error
@@ -335,12 +352,31 @@ export const registerStudent = async (data: {
   Gender: number;
   Address: string;
   StudentCode: string;
+  LevelId: string;
 }) => {
   try {
     const response = await apiInstance.post("/Account/StudentRegister", data);
     return response.data; // Return the response data on success
   } catch (error: any) {
     throw error.response?.data || new Error("Student registration failed");
+  }
+};
+export const updateStudent = async (data: {
+  Id: string;
+  StudentName: string;
+  Name: string;
+  Email: string;
+  GenderId: number;
+  StudentCode: string;
+  GradeId: string;
+  LevelId: string;
+  SchoolId: string;
+}) => {
+  try {
+    const response = await apiInstance.put("/Account/EditStudent", data);
+    return response.data; // Return the response data on success
+  } catch (error: any) {
+    throw error.response?.data || new Error("Student update failed");
   }
 };
 

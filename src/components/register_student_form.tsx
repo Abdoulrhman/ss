@@ -15,25 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { registerStudent } from "@/api/adminApis";
-import { useSchoolSearch } from "@/hooks/useSchoolSearch"; // Import the custom hook
+import { registerStudent, updateStudent } from "@/api/adminApis";
+import { useSchoolSearch } from "@/hooks/useSchoolSearch";
+import { useGradeSearch } from "@/hooks/useGradesSearch";
+import { useLevelSearch } from "@/hooks/usseLevelsSearch";
 
-// Define options for dropdowns
-const religionOptions = [
-  { label: "Muslim", value: "1" },
-  { label: "Christian", value: "2" },
-  { label: "Another Religion", value: "3" },
-];
-const stateOfMindOptions = [
-  { label: "Healthy", value: "1" },
-  { label: "Sick", value: "2" },
-];
-const gradeOptions = [
-  { label: "Grade 1", value: "d1ebe318-0a70-44ac-b244-768bdb3b974e" },
-  { label: "Grade 2", value: "another-grade-id" },
-];
-
-// Schema to validate the student registration form
+// Schema to validate the student form
 const FormSchema = z.object({
   studentCode: z
     .string()
@@ -50,15 +37,14 @@ const FormSchema = z.object({
     .string()
     .min(2, { message: "Student Name must be at least 2 characters." }),
   email: z.string().optional(),
-  religion: z.string().optional(),
-  stateOfMind: z.string().optional(),
   gradeId: z.string().min(1, { message: "Please select a valid grade." }),
   schoolId: z.string().min(1, { message: "Please select a valid school." }),
+  levelId: z.string().min(1, { message: "Please select a valid level." }),
   password: z
     .string()
-    .min(6, { message: "Password must be at least 6 characters." }),
+    .min(6, { message: "Password must be at least 6 characters." })
+    .optional(),
   gender: z.enum(["0", "1"]), // 0 for Male, 1 for Female
-  address: z.string().optional(),
 });
 
 interface RegisterStudentFormProps {
@@ -68,6 +54,7 @@ interface RegisterStudentFormProps {
 }
 
 export function RegisterStudentForm({
+  isEdit = false,
   studentData = null,
   onClose,
 }: RegisterStudentFormProps) {
@@ -76,6 +63,19 @@ export function RegisterStudentForm({
     isLoading: isLoadingSchools,
     error: schoolError,
   } = useSchoolSearch();
+
+  const {
+    grades,
+    isLoading: isLoadingGrades,
+    error: gradeError,
+  } = useGradeSearch();
+
+  const {
+    levels,
+    isLoading: isLoadingLevels,
+    error: levelError,
+  } = useLevelSearch();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -83,13 +83,11 @@ export function RegisterStudentForm({
       Name: studentData?.Name || "",
       studentName: studentData?.studentName || "",
       email: studentData?.Email || "",
-      religion: studentData?.Religion || "",
-      stateOfMind: studentData?.StateOfMind || "",
-      gradeId: studentData?.GradeId || "d1ebe318-0a70-44ac-b244-768bdb3b974e",
+      gradeId: studentData?.GradeId || "",
       schoolId: studentData?.SchoolId || "",
-      password: studentData?.Password || "",
+      levelId: studentData?.LevelId || "",
+      password: isEdit ? undefined : studentData?.Password || "",
       gender: studentData?.Gender || "0",
-      address: studentData?.Address || "",
     },
   });
 
@@ -100,28 +98,52 @@ export function RegisterStudentForm({
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true);
     try {
-      const response = await registerStudent({
-        StudentCode: data.studentCode,
-        Name: data.Name,
-        StudentName: data.studentName,
-        Email: data.email || "",
-        Phone: "", // Add default or actual phone value
-        Religion: data.religion || "1",
-        StateOfMind: data.stateOfMind || "1",
-        GradeId: data.gradeId,
-        SchoolId: data.schoolId,
-        SchoolName: "", // Add default or actual school name value
-        Password: data.password,
-        Gender: Number(data.gender),
-        Address: data.address || "",
-      });
-      console.log("Registration successful", response);
+      if (isEdit) {
+        // Update student
+        const response = await updateStudent({
+          Id: studentData?.Id,
+          StudentName: data.studentName,
+          Name: data.Name,
+          Email: data.email || "",
+          GenderId: Number(data.gender),
+          StudentCode: data.studentCode,
+          GradeId: data.gradeId,
+          LevelId: data.levelId,
+          NonArab: studentData?.NonArab || false,
+          SenStudent: studentData?.SenStudent || false,
+          CitizenStudent: studentData?.CitizenStudent || false,
+          GT: studentData?.GT || false,
+          SchoolId: data.schoolId,
+          TextPass: studentData?.TextPass || "",
+        });
+        console.log("Student updated successfully:", response);
+      } else {
+        // Register student
+        const response = await registerStudent({
+          StudentCode: data.studentCode,
+          Name: data.Name,
+          StudentName: data.studentName,
+          Email: data.email || "",
+          Phone: "", // Add default or actual phone value
+          Religion: "", // Add default or actual religion value
+          StateOfMind: "", // Add default or actual state of mind value
+          Address: "", // Add default or actual address value
+          GradeId: data.gradeId,
+          SchoolId: data.schoolId,
+          LevelId: data.levelId,
+          SchoolName: "", // Add default or actual school name value
+          Password: data.password || "",
+          Gender: Number(data.gender),
+        });
+        console.log("Student registered successfully:", response);
+      }
+
       navigate("/dashboard/students");
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {
-      setError(err.Message || "Registration failed");
-      console.error("Registration failed", err);
+      setError(err.Message || "Operation failed");
+      console.error("Operation failed:", err);
     } finally {
       setIsLoading(false);
     }
@@ -201,56 +223,6 @@ export function RegisterStudentForm({
             )}
           />
 
-          {/* Religion field */}
-          <FormField
-            control={form.control}
-            name="religion"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Religion</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full border rounded p-2 bg-gray-100"
-                  >
-                    <option value="">Select religion</option>
-                    {religionOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* State of Mind field */}
-          <FormField
-            control={form.control}
-            name="stateOfMind"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>State of Mind</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="w-full border rounded p-2 bg-gray-100"
-                  >
-                    <option value="">Select state of mind</option>
-                    {stateOfMindOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Grade ID field */}
           <FormField
             control={form.control}
@@ -262,15 +234,46 @@ export function RegisterStudentForm({
                   <select
                     {...field}
                     className="w-full border rounded p-2 bg-gray-100"
+                    disabled={isLoadingGrades}
                   >
                     <option value="">Select grade</option>
-                    {gradeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    {grades.map((grade) => (
+                      <option key={grade.Id} value={grade.Id}>
+                        {grade.NameEn}
                       </option>
                     ))}
                   </select>
                 </FormControl>
+                {isLoadingGrades && <p>Loading grades...</p>}
+                {gradeError && <p className="text-red-500">{gradeError}</p>}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Level ID field */}
+          <FormField
+            control={form.control}
+            name="levelId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Level</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="w-full border rounded p-2 bg-gray-100"
+                    disabled={isLoadingLevels}
+                  >
+                    <option value="">Select level</option>
+                    {levels.map((level) => (
+                      <option key={level.Id} value={level.Id}>
+                        {level.NameEn}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                {isLoadingLevels && <p>Loading levels...</p>}
+                {levelError && <p className="text-red-500">{levelError}</p>}
                 <FormMessage />
               </FormItem>
             )}
@@ -304,24 +307,26 @@ export function RegisterStudentForm({
             )}
           />
 
-          {/* Password field */}
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter password"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Password field (only for registration) */}
+          {!isEdit && (
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Enter password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           {/* Gender field */}
           <FormField
@@ -344,25 +349,10 @@ export function RegisterStudentForm({
             )}
           />
 
-          {/* Address field */}
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Submit button */}
           <div className="col-span-2">
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Submitting..." : "Save"}
+              {isLoading ? "Submitting..." : isEdit ? "Update" : "Register"}
             </Button>
           </div>
         </form>

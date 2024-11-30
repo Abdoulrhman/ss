@@ -21,6 +21,7 @@ const tabRoutes: { [key: string]: string } = {
   "/dashboard/grades": "grades",
   "/dashboard/levels": "levels",
   "/dashboard/subjects": "subjects",
+  "/dashboard/questions": "questions",
 };
 
 function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
@@ -144,6 +145,16 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         onClick={() => handleTabClick("/dashboard/subjects")}
       >
         Subjects
+      </button>
+      <button
+        className={`text-left p-2 rounded-lg ${
+          activeTab === "questions"
+            ? "bg-gray-700 text-white"
+            : "hover:bg-gray-800 text-gray-400"
+        }`}
+        onClick={() => handleTabClick("/dashboard/questions")}
+      >
+        Questions
       </button>
 
       {!isOpen && (

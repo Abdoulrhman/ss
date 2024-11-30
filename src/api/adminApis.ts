@@ -736,3 +736,32 @@ export const changePassword = async (data: {
     throw error.response?.data || new Error("Failed to change password");
   }
 };
+
+// question APIs
+export const addQuestions = async (
+  data: Array<{
+    ContentQuestion: string;
+    File?: string;
+    Importance: boolean;
+    QuestionType: number; // Use the EQuestionType enum for clarity
+    Score: number;
+    Answers: Array<{
+      Answer: string;
+      IsCorrect: boolean;
+      File?: string;
+    }>;
+  }>
+) => {
+  try {
+    const response = await apiInstance.post("/Questions/AddQuestions", data);
+    return response.data; // Return the successful response data
+  } catch (error: any) {
+    throw error.response?.data || new Error("Failed to add questions");
+  }
+};
+export enum EQuestionType {
+  MCQ = 1,
+  Writing = 2,
+  Matching = 3,
+  Drag = 4,
+}

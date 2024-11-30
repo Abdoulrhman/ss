@@ -14,6 +14,7 @@ import { GradesTable } from "./pages/dashboard/grades/grade_table";
 import { LevelsTable } from "./pages/dashboard/levels/level_table";
 import ProfilePage from "./pages/dashboard/profile";
 import { StudentFilePage } from "./pages/dashboard/student/download_students";
+import AddQuestionsPage from "./pages/dashboard/questions";
 
 const App = () => {
   return (
@@ -41,6 +42,7 @@ const App = () => {
         <Route path="/dashboard/levels" element={<LevelsTable />} />
         <Route path="/dashboard/subjects" element={<SubjectsTable />} />
         <Route path="/dashboard/profile" element={<ProfilePage />} />
+        <Route path="/dashboard/questions" element={<AddQuestionsPage />} />
       </Route>
     </Routes>
   );

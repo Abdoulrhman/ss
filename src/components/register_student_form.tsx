@@ -22,7 +22,7 @@ import { useLevelSearch } from "@/hooks/usseLevelsSearch";
 
 // Schema to validate the student form
 const FormSchema = z.object({
-  studentCode: z
+  StudentCode: z
     .string()
     .regex(/^[a-zA-Z0-9]+$/, { message: "Student Code must be alphanumeric." })
     .min(1, { message: "Student Code is required." }),
@@ -33,7 +33,7 @@ const FormSchema = z.object({
       message:
         "Name must contain only letters and numbers, no spaces or special characters.",
     }),
-  studentName: z
+  StudentName: z
     .string()
     .min(2, { message: "Student Name must be at least 2 characters." }),
   email: z.string().optional(),
@@ -79,9 +79,9 @@ export function RegisterStudentForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      studentCode: studentData?.studentCode || "",
+      StudentCode: studentData?.studentCode || "",
       Name: studentData?.Name || "",
-      studentName: studentData?.studentName || "",
+      StudentName: studentData?.StudentName || "",
       email: studentData?.Email || "",
       gradeId: studentData?.GradeId || "",
       schoolId: studentData?.SchoolId || "",
@@ -102,11 +102,11 @@ export function RegisterStudentForm({
         // Update student
         const response = await updateStudent({
           Id: studentData?.Id,
-          StudentName: data.studentName,
+          StudentName: data.StudentName,
+          StudentCode: data.StudentCode,
           Name: data.Name,
           Email: data.email || "",
           GenderId: Number(data.gender),
-          StudentCode: data.studentCode,
           GradeId: data.gradeId,
           LevelId: data.levelId,
           SchoolId: data.schoolId,
@@ -115,9 +115,9 @@ export function RegisterStudentForm({
       } else {
         // Register student
         const response = await registerStudent({
-          StudentCode: data.studentCode,
+          StudentCode: data.StudentCode,
           Name: data.Name,
-          StudentName: data.studentName,
+          StudentName: data.StudentName,
           Email: data.email || "",
           Phone: "", // Add default or actual phone value
           Religion: "", // Add default or actual religion value
@@ -161,7 +161,7 @@ export function RegisterStudentForm({
           {/* Student Code field */}
           <FormField
             control={form.control}
-            name="studentCode"
+            name="StudentCode"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Student Code</FormLabel>

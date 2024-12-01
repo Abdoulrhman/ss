@@ -23,32 +23,23 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { addFileStudent, downloadTemplate } from "@/api/adminApis";
 import { useSchoolSearch } from "@/hooks/useSchoolSearch";
-import { useGradeSearch } from "@/hooks/useGradesSearch";
 
 // Validation schema using Zod
 const FormSchema = z.object({
-  gradeId: z.string().min(1, { message: "GradeId is required" }),
   schoolId: z.string().min(1, { message: "SchoolId is required" }),
   studentFile: z
     .instanceof(File)
     .refine((file) => file.size > 0, { message: "A file must be selected" }),
 });
 
-// Sample Grade and School Data with fixed IDs
-
 export function AddFileStudentForm() {
   const [isTemplateDownloading, setIsTemplateDownloading] = useState(false);
-  // Fetch schools and grades using hooks
+  // Fetch schools using hooks
   const {
     schools,
     isLoading: isLoadingSchools,
     error: schoolError,
   } = useSchoolSearch();
-  const {
-    grades,
-    isLoading: isLoadingGrades,
-    error: gradeError,
-  } = useGradeSearch();
 
   const handleTemplateDownload = async () => {
     setIsTemplateDownloading(true);
@@ -66,7 +57,6 @@ export function AddFileStudentForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      gradeId: "",
       schoolId: "",
       studentFile: undefined,
     },
@@ -82,13 +72,9 @@ export function AddFileStudentForm() {
     setSuccess(null);
 
     try {
-      const response = await addFileStudent(
-        data.gradeId,
-        data.schoolId,
-        data.studentFile
-      );
+      const response = await addFileStudent(data.schoolId, data.studentFile);
       setSuccess(
-        "File uploaded successfully!, new file with passwords already downloaded"
+        "File uploaded successfully! A new file with passwords has been downloaded."
       );
       console.log(response);
     } catch (err: any) {
@@ -99,7 +85,7 @@ export function AddFileStudentForm() {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-8 w-full  mx-auto">
+    <div className="grid grid-cols-2 gap-8 w-full mx-auto">
       {/* Column 1: Form */}
       <div className="flex flex-col items-start space-y-6">
         <h2 className="text-xl font-bold">File Template</h2>
@@ -111,7 +97,7 @@ export function AddFileStudentForm() {
         </Button>
       </div>
 
-      {/* Column 2: Download Template */}
+      {/* Column 2: Upload Form */}
       <div>
         {error && (
           <Alert variant="destructive" className="w-full mb-4">
@@ -131,40 +117,7 @@ export function AddFileStudentForm() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 w-full"
           >
-            <FormField
-              control={form.control}
-              name="gradeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grade</FormLabel>
-                  <FormControl>
-                    {isLoadingGrades ? (
-                      <div>Loading grades...</div> // Loading state
-                    ) : gradeError ? (
-                      <div className="text-red-500">{gradeError}</div> // Error state
-                    ) : (
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Grade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {grades?.map((grade) => (
-                            <SelectItem key={grade.Id} value={grade.Id}>
-                              {grade.NameEn} {/* Display English name */}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            {/* School ID field */}
             <FormField
               control={form.control}
               name="schoolId"

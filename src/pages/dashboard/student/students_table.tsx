@@ -9,7 +9,10 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Pencil, Trash } from "lucide-react";
-import { getAllUsers, deleteUser } from "@/api/adminApis"; // Import download function
+import { getAllUsers, deleteUser } from "@/api/adminApis";
+import { useSchoolSearch } from "@/hooks/useSchoolSearch";
+import { useGradeSearch } from "@/hooks/useGradesSearch";
+import { useLevelSearch } from "@/hooks/usseLevelsSearch";
 import { AddEditStudentModal } from "./add_student_modal";
 
 export function StudentUsersTable() {
@@ -27,6 +30,23 @@ export function StudentUsersTable() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10); // Fixed page size
   const [totalItems, setTotalItems] = useState(0); // Total number of items
+
+  // Fetch school, grade, and level data
+  const {
+    schools,
+    isLoading: isLoadingSchools,
+    error: schoolError,
+  } = useSchoolSearch();
+  const {
+    grades,
+    isLoading: isLoadingGrades,
+    error: gradeError,
+  } = useGradeSearch();
+  const {
+    levels,
+    isLoading: isLoadingLevels,
+    error: levelError,
+  } = useLevelSearch();
 
   // Fetch students
   const fetchStudents = async () => {
@@ -105,6 +125,14 @@ export function StudentUsersTable() {
     }
   };
 
+  // Helper functions to map IDs to names
+  const getSchoolName = (id: string) =>
+    schools.find((school) => school.Id === id)?.NameEn || "N/A";
+  const getGradeName = (id: string) =>
+    grades.find((grade) => grade.Id === id)?.NameEn || "N/A";
+  const getLevelName = (id: string) =>
+    levels.find((level) => level.Id === id)?.NameEn || "N/A";
+
   // Close modal handler and refresh students after add/edit
   const closeModalAndRefresh = async () => {
     setModalOpen(false);
@@ -142,43 +170,28 @@ export function StudentUsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell
-                className="font-bold cursor-pointer"
-                onClick={() => handleSort("Name")}
-              >
-                Name {sortField === "Name" && (sortOrder === 1 ? "↑" : "↓")}
-              </TableCell>
-
-              <TableCell
-                className="font-bold cursor-pointer"
-                onClick={() => handleSort("StudentCode")}
-              >
-                StudentCode{" "}
-                {sortField === "StudentCode" && (sortOrder === 1 ? "↑" : "↓")}
-              </TableCell>
-              <TableCell
-                className="font-bold cursor-pointer"
-                onClick={() => handleSort("GenderName")}
-              >
-                GenderName{" "}
-                {sortField === "GenderName" && (sortOrder === 1 ? "↑" : "↓")}
-              </TableCell>
-              <TableCell
-                className="font-bold cursor-pointer"
-                onClick={() => handleSort("Email")}
-              >
-                Email {sortField === "Email" && (sortOrder === 1 ? "↑" : "↓")}
-              </TableCell>
+              <TableCell className="font-bold">Student Code</TableCell>
+              <TableCell className="font-bold">Student Name</TableCell>
+              <TableCell className="font-bold">Nationality</TableCell>
+              <TableCell className="font-bold">School</TableCell>
+              <TableCell className="font-bold">Class</TableCell>
+              <TableCell className="font-bold">Grade</TableCell>
+              <TableCell className="font-bold">Level</TableCell>
+              <TableCell className="font-bold">Gender</TableCell>
               <TableCell className="font-bold">Actions</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {students.map((student) => (
               <TableRow key={student.Id}>
-                <TableCell>{student.Name}</TableCell>
                 <TableCell>{student.StudentCode}</TableCell>
+                <TableCell>{student.StudentName}</TableCell>
+                <TableCell>{student.NonArab ? "Non-Arab" : "Arab"}</TableCell>
+                <TableCell>{getSchoolName(student.SchoolId)}</TableCell>
+                <TableCell>{"N/A"}</TableCell> {/* Placeholder for Class */}
+                <TableCell>{getGradeName(student.GradeId)}</TableCell>
+                <TableCell>{getLevelName(student.LevelId)}</TableCell>
                 <TableCell>{student.GenderName}</TableCell>
-                <TableCell>{student.Email}</TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
                     <Button

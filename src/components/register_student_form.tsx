@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,20 +26,14 @@ const FormSchema = z.object({
     .string()
     .regex(/^[a-zA-Z0-9]+$/, { message: "Student Code must be alphanumeric." })
     .min(1, { message: "Student Code is required." }),
-  Name: z
-    .string()
-    .min(2, { message: "Name must be at least 2 characters." })
-    .regex(/^[a-zA-Z0-9]+$/, {
-      message:
-        "Name must contain only letters and numbers, no spaces or special characters.",
-    }),
+  Name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   StudentName: z
     .string()
     .min(2, { message: "Student Name must be at least 2 characters." }),
   email: z.string().optional(),
-  gradeId: z.string().min(1, { message: "Please select a valid grade." }),
-  schoolId: z.string().min(1, { message: "Please select a valid school." }),
-  levelId: z.string().min(1, { message: "Please select a valid level." }),
+  gradeId: z.string().nullable(), // Allow null for gradeId
+  schoolId: z.string().nullable(), // Allow null for schoolId
+  levelId: z.string().nullable(), // Allow null for levelId
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." })
@@ -63,7 +57,6 @@ export function RegisterStudentForm({
     isLoading: isLoadingSchools,
     error: schoolError,
   } = useSchoolSearch();
-
   const {
     grades,
     isLoading: isLoadingGrades,
@@ -79,15 +72,15 @@ export function RegisterStudentForm({
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      StudentCode: studentData?.studentCode || "",
+      StudentCode: studentData?.StudentCode || "",
       Name: studentData?.Name || "",
       StudentName: studentData?.StudentName || "",
       email: studentData?.Email || "",
-      gradeId: studentData?.GradeId || "",
-      schoolId: studentData?.SchoolId || "",
-      levelId: studentData?.LevelId || "",
-      password: isEdit ? undefined : studentData?.Password || "",
-      gender: studentData?.Gender || "0",
+      gradeId: studentData?.GradeId || null,
+      schoolId: studentData?.SchoolId || null,
+      levelId: studentData?.LevelId || null,
+      password: isEdit ? undefined : studentData?.TextPass || "",
+      gender: studentData?.GenderId?.toString() || "0", // Convert GenderId to string
     },
   });
 
@@ -95,12 +88,29 @@ export function RegisterStudentForm({
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Reset the form values if studentData changes
+  useEffect(() => {
+    if (studentData) {
+      form.reset({
+        StudentCode: studentData.StudentCode || "",
+        Name: studentData.Name || "",
+        StudentName: studentData.StudentName || "",
+        email: studentData.Email || "",
+        gradeId: studentData.GradeId || null,
+        schoolId: studentData.SchoolId || null,
+        levelId: studentData.LevelId || null,
+        password: isEdit ? undefined : studentData.TextPass || "",
+        gender: studentData.GenderId?.toString() || "0",
+      });
+    }
+  }, [studentData, isEdit, form]);
+
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setIsLoading(true);
     try {
       if (isEdit) {
         // Update student
-        const response = await updateStudent({
+        await updateStudent({
           Id: studentData?.Id,
           StudentName: data.StudentName,
           StudentCode: data.StudentCode,
@@ -111,34 +121,31 @@ export function RegisterStudentForm({
           LevelId: data.levelId,
           SchoolId: data.schoolId,
         });
-        console.log("Student updated successfully:", response);
       } else {
         // Register student
-        const response = await registerStudent({
+        await registerStudent({
           StudentCode: data.StudentCode,
           Name: data.Name,
           StudentName: data.StudentName,
           Email: data.email || "",
-          Phone: "", // Add default or actual phone value
-          Religion: "", // Add default or actual religion value
-          StateOfMind: "", // Add default or actual state of mind value
-          Address: "", // Add default or actual address value
+          Phone: "", // Placeholder or actual phone value
+          Religion: "", // Placeholder or actual religion value
+          StateOfMind: "", // Placeholder or actual state of mind value
+          Address: "", // Placeholder or actual address value
           GradeId: data.gradeId,
           SchoolId: data.schoolId,
           LevelId: data.levelId,
-          SchoolName: "", // Add default or actual school name value
+          SchoolName: "", // Placeholder or actual school name
           Password: data.password || "",
           Gender: Number(data.gender),
         });
-        console.log("Student registered successfully:", response);
       }
 
       navigate("/dashboard/students");
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {
-      setError(err.Message || "Operation failed");
-      console.error("Operation failed:", err);
+      setError(err.message || "Operation failed");
     } finally {
       setIsLoading(false);
     }
@@ -191,7 +198,7 @@ export function RegisterStudentForm({
           {/* Student Name field */}
           <FormField
             control={form.control}
-            name="studentName"
+            name="StudentName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Student Name</FormLabel>

@@ -154,7 +154,7 @@ function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         }`}
         onClick={() => handleTabClick("/dashboard/questions")}
       >
-        Questions
+        Add Modal Exam
       </button>
 
       {!isOpen && (

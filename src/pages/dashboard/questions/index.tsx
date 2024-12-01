@@ -1,34 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EQuestionType } from "@/api/adminApis"; // Import the EQuestionType enum
 import apiInstance from "@/api/axiosInstance";
 
-const AddQuestionsPage: React.FC = () => {
-  const [questions, setQuestions] = useState([
-    {
-      ContentQuestion: "",
-      File: null as File | null,
-      Importance: false,
-      QuestionType: EQuestionType.MCQ,
-      Score: 0,
-      RelatedQuestions: [
-        {
-          ContentQuestion: "",
-          File: null as File | null,
-          Importance: false,
-          QuestionType: EQuestionType.MCQ,
-          Score: 0,
-          Answers: [
-            { Answer: "", IsCorrect: false, File: null as File | null },
-          ],
-        },
-      ],
-      Answers: [{ Answer: "", IsCorrect: false, File: null as File | null }],
-    },
-  ]);
-
+const AddModelExamPage: React.FC = () => {
   const [formData, setFormData] = useState({
     NameAr: "",
     NameEn: "",
@@ -39,6 +15,52 @@ const AddQuestionsPage: React.FC = () => {
     LevelId: "",
     IsActive: true,
   });
+
+  interface Answer {
+    Answer: string;
+    IsCorrect: boolean;
+    File: string;
+  }
+
+  interface RelatedQuestion {
+    ContentQuestion: string;
+    File: string;
+    Importance: boolean;
+    QuestionType: EQuestionType;
+    Score: number;
+    Answers: Answer[];
+  }
+
+  interface Question {
+    ContentQuestion: string;
+    File: string;
+    Importance: boolean;
+    QuestionType: EQuestionType;
+    Score: number;
+    RelatedQuestions: RelatedQuestion[];
+    Answers: Answer[];
+  }
+
+  const [questions, setQuestions] = useState<Question[]>([
+    {
+      ContentQuestion: "",
+      File: "",
+      Importance: false,
+      QuestionType: EQuestionType.MCQ,
+      Score: 0,
+      RelatedQuestions: [
+        {
+          ContentQuestion: "",
+          File: "",
+          Importance: false,
+          QuestionType: EQuestionType.MCQ,
+          Score: 0,
+          Answers: [{ Answer: "", IsCorrect: false, File: "" }],
+        },
+      ],
+      Answers: [{ Answer: "", IsCorrect: false, File: "" }],
+    },
+  ]);
 
   const handleFormChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
@@ -53,27 +75,24 @@ const AddQuestionsPage: React.FC = () => {
   const handleAnswerChange = (
     questionIndex: number,
     answerIndex: number,
-    field: string,
+    field: keyof Answer,
     value: any
   ) => {
     const updatedQuestions = [...questions];
-    (updatedQuestions[questionIndex].Answers[answerIndex] as any)[field] =
-      value;
+    updatedQuestions[questionIndex].Answers[answerIndex][field] = value;
     setQuestions(updatedQuestions);
   };
 
   const handleRelatedQuestionChange = (
     questionIndex: number,
     relatedQuestionIndex: number,
-    field: string,
+    field: keyof RelatedQuestion,
     value: any
   ) => {
     const updatedQuestions = [...questions];
-    (
-      updatedQuestions[questionIndex].RelatedQuestions[
-        relatedQuestionIndex
-      ] as any
-    )[field] = value;
+    updatedQuestions[questionIndex].RelatedQuestions[relatedQuestionIndex][
+      field
+    ] = value;
     setQuestions(updatedQuestions);
   };
 
@@ -82,7 +101,7 @@ const AddQuestionsPage: React.FC = () => {
     updatedQuestions[questionIndex].Answers.push({
       Answer: "",
       IsCorrect: false,
-      File: null,
+      File: "",
     });
     setQuestions(updatedQuestions);
   };
@@ -91,11 +110,11 @@ const AddQuestionsPage: React.FC = () => {
     const updatedQuestions = [...questions];
     updatedQuestions[questionIndex].RelatedQuestions.push({
       ContentQuestion: "",
-      File: null,
+      File: "",
       Importance: false,
       QuestionType: EQuestionType.MCQ,
       Score: 0,
-      Answers: [{ Answer: "", IsCorrect: false, File: null }],
+      Answers: [{ Answer: "", IsCorrect: false, File: "" }],
     });
     setQuestions(updatedQuestions);
   };
@@ -105,80 +124,49 @@ const AddQuestionsPage: React.FC = () => {
       ...questions,
       {
         ContentQuestion: "",
-        File: null,
+        File: "",
         Importance: false,
         QuestionType: EQuestionType.MCQ,
         Score: 0,
         RelatedQuestions: [
           {
             ContentQuestion: "",
-            File: null,
+            File: "",
             Importance: false,
             QuestionType: EQuestionType.MCQ,
             Score: 0,
-            Answers: [{ Answer: "", IsCorrect: false, File: null }],
+            Answers: [{ Answer: "", IsCorrect: false, File: "" }],
           },
         ],
-        Answers: [{ Answer: "", IsCorrect: false, File: null }],
+        Answers: [{ Answer: "", IsCorrect: false, File: "" }],
       },
     ]);
   };
 
   const handleSubmit = async () => {
     try {
-      const formattedQuestions = questions.map((q) => ({
-        ContentQuestion: q.ContentQuestion,
-        File: q.File ? q.File.name : undefined,
-        Importance: q.Importance,
-        QuestionType: q.QuestionType,
-        Score: q.Score,
-        RelatedQuestions: q.RelatedQuestions.map((rq) => ({
-          ContentQuestion: rq.ContentQuestion,
-          File: rq.File ? rq.File.name : undefined,
-          Importance: rq.Importance,
-          QuestionType: rq.QuestionType,
-          Score: rq.Score,
-          Answers: rq.Answers.map((a) => ({
-            Answer: a.Answer,
-            IsCorrect: a.IsCorrect,
-            File: a.File ? a.File.name : undefined,
-          })),
-        })),
-        Answers: q.Answers.map((a) => ({
-          Answer: a.Answer,
-          IsCorrect: a.IsCorrect,
-          File: a.File ? a.File.name : undefined,
-        })),
-      }));
-
-      const payload = {
-        ...formData,
-        Questions: formattedQuestions,
-      };
-
-      const response = await apiInstance.post("/api/ModelExam/Add", payload);
+      const payload = { ...formData, Questions: questions };
+      const response = await apiInstance.post("/ModelExam/Add", payload);
       alert("Model Exam added successfully!");
       console.log("Response:", response.data);
-
-      // Reset form
       setQuestions([
         {
           ContentQuestion: "",
-          File: null,
+          File: "",
           Importance: false,
           QuestionType: EQuestionType.MCQ,
           Score: 0,
           RelatedQuestions: [
             {
               ContentQuestion: "",
-              File: null,
+              File: "",
               Importance: false,
               QuestionType: EQuestionType.MCQ,
               Score: 0,
-              Answers: [{ Answer: "", IsCorrect: false, File: null }],
+              Answers: [{ Answer: "", IsCorrect: false, File: "" }],
             },
           ],
-          Answers: [{ Answer: "", IsCorrect: false, File: null }],
+          Answers: [{ Answer: "", IsCorrect: false, File: "" }],
         },
       ]);
       setFormData({
@@ -201,115 +189,148 @@ const AddQuestionsPage: React.FC = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Add Model Exam</h1>
 
-      {/* Form Fields */}
+      {/* Main Form */}
       <div className="grid grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium mb-2">Arabic Name</label>
-          <Input
-            placeholder="Enter Arabic Name"
-            value={formData.NameAr}
-            onChange={(e) => handleFormChange("NameAr", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">English Name</label>
-          <Input
-            placeholder="Enter English Name"
-            value={formData.NameEn}
-            onChange={(e) => handleFormChange("NameEn", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Piece</label>
-          <Input
-            placeholder="Enter Piece"
-            value={formData.piece}
-            onChange={(e) => handleFormChange("piece", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Skill</label>
-          <Input
-            type="number"
-            placeholder="Enter Skill"
-            value={formData.Skill}
-            onChange={(e) => handleFormChange("Skill", Number(e.target.value))}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Subject ID</label>
-          <Input
-            placeholder="Enter Subject ID"
-            value={formData.SubjectId}
-            onChange={(e) => handleFormChange("SubjectId", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Grade ID</label>
-          <Input
-            placeholder="Enter Grade ID"
-            value={formData.GradeId}
-            onChange={(e) => handleFormChange("GradeId", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Level ID</label>
-          <Input
-            placeholder="Enter Level ID"
-            value={formData.LevelId}
-            onChange={(e) => handleFormChange("LevelId", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-2">Is Active</label>
-          <input
-            type="checkbox"
-            checked={formData.IsActive}
-            onChange={(e) => handleFormChange("IsActive", e.target.checked)}
-          />
-        </div>
+        {Object.entries(formData).map(([field, value]) => (
+          <div key={field}>
+            <label className="block text-sm font-medium mb-2">{field}</label>
+            {typeof value === "boolean" ? (
+              <input
+                type="checkbox"
+                checked={value}
+                onChange={(e) => handleFormChange(field, e.target.checked)}
+              />
+            ) : (
+              <Input
+                placeholder={`Enter ${field}`}
+                value={value}
+                onChange={(e) => handleFormChange(field, e.target.value)}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Questions */}
+      {/* Questions Section */}
       {questions.map((question, qIndex) => (
-        <div key={qIndex} className="border p-6 mb-6 rounded-lg">
-          <h2 className="text-lg font-semibold mb-4">Question {qIndex + 1}</h2>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
-              Question Content
-            </label>
+  <div key={qIndex} className="border p-4 mb-6 rounded-lg">
+    <h2 className="font-semibold mb-4">Question {qIndex + 1}</h2>
+    
+    {/* Question Fields */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-2">Question Content</label>
+      <Input
+        placeholder="Enter Question Content"
+        value={question.ContentQuestion}
+        onChange={(e) =>
+          handleQuestionChange(qIndex, "ContentQuestion", e.target.value)
+        }
+      />
+    </div>
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-2">File</label>
+      <input
+        type="file"
+        onChange={(e) =>
+          handleQuestionChange(qIndex, "File", e.target.files?.[0]?.name)
+        }
+      />
+    </div>
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-2">Importance</label>
+      <input
+        type="checkbox"
+        checked={question.Importance}
+        onChange={(e) =>
+          handleQuestionChange(qIndex, "Importance", e.target.checked)
+        }
+      />
+    </div>
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-2">Question Type</label>
+      <select
+        value={question.QuestionType}
+        onChange={(e) =>
+          handleQuestionChange(qIndex, "QuestionType", Number(e.target.value))
+        }
+        className="w-full p-2 border rounded"
+      >
+        {Object.entries(EQuestionType).map(([key, value]) =>
+          typeof value === "number" && (
+            <option key={value} value={value}>
+              {key}
+            </option>
+          )
+        )}
+      </select>
+    </div>
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-2">Score</label>
+      <Input
+        type="number"
+        placeholder="Enter Score"
+        value={question.Score}
+        onChange={(e) =>
+          handleQuestionChange(qIndex, "Score", Number(e.target.value))
+        }
+      />
+    </div>
+
+    {/* Answers Section */}
+    <div className="mb-4">
+      <h3 className="font-medium mb-2">Answers</h3>
+      {question.Answers.map((answer, aIndex) => (
+        <div key={aIndex} className="border p-2 mb-2 rounded-lg">
+          <div className="mb-2">
+            <label className="block text-sm font-medium mb-2">Answer</label>
             <Input
-              placeholder="Enter the question"
-              value={question.ContentQuestion}
+              placeholder="Enter Answer"
+              value={answer.Answer}
               onChange={(e) =>
-                handleQuestionChange(qIndex, "ContentQuestion", e.target.value)
+                handleAnswerChange(qIndex, aIndex, "Answer", e.target.value)
               }
             />
           </div>
-
-          <Button
-            onClick={() => handleAddRelatedQuestion(qIndex)}
-            className="mt-2 bg-purple-600 text-white"
-          >
-            Add Related Question
-          </Button>
+          <div className="mb-2">
+            <label className="block text-sm font-medium mb-2">Is Correct</label>
+            <input
+              type="checkbox"
+              checked={answer.IsCorrect}
+              onChange={(e) =>
+                handleAnswerChange(qIndex, aIndex, "IsCorrect", e.target.checked)
+              }
+            />
+          </div>
+          <div className="mb-2">
+            <label className="block text-sm font-medium mb-2">File</label>
+            <input
+              type="file"
+              onChange={(e) =>
+                handleAnswerChange(qIndex, aIndex, "File", e.target.files?.[0]?.name)
+              }
+            />
+          </div>
         </div>
       ))}
-
-      {/* Add New Question */}
       <Button
-        onClick={handleAddQuestion}
-        className="mt-4 bg-green-600 text-white"
+        onClick={() => handleAddAnswer(qIndex)}
+        className="bg-purple-500 mt-2"
       >
-        Add New Question
+        Add Answer
       </Button>
+    </div>
+  </div>
+))}
 
-      {/* Submit Button */}
-      <Button onClick={handleSubmit} className="bg-blue-600 text-white">
+
+      <Button onClick={handleAddQuestion} className="bg-green-500 mt-4">
+        Add Question
+      </Button>
+      <Button onClick={handleSubmit} className="bg-blue-500 mt-4">
         Submit Model Exam
       </Button>
     </div>
   );
 };
 
-export default AddQuestionsPage;
+export default AddModelExamPage;

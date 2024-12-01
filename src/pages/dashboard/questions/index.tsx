@@ -73,28 +73,28 @@ const AddModelExamPage: React.FC = () => {
   };
 
   const handleAnswerChange = (
-    questionIndex: number,
-    answerIndex: number,
-    field: keyof Answer,
-    value: any
-  ) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].Answers[answerIndex][field] = value;
-    setQuestions(updatedQuestions);
-  };
+      questionIndex: number,
+      answerIndex: number,
+      field: keyof Answer,
+      value: any
+    ) => {
+      const updatedQuestions = [...questions];
+      updatedQuestions[questionIndex].Answers[answerIndex][field] = value as never;
+      setQuestions(updatedQuestions);
+    };
 
-  const handleRelatedQuestionChange = (
-    questionIndex: number,
-    relatedQuestionIndex: number,
-    field: keyof RelatedQuestion,
-    value: any
-  ) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].RelatedQuestions[relatedQuestionIndex][
-      field
-    ] = value;
-    setQuestions(updatedQuestions);
-  };
+  // const handleRelatedQuestionChange = (
+  //   questionIndex: number,
+  //   relatedQuestionIndex: number,
+  //   field: keyof RelatedQuestion,
+  //   value: any
+  // ) => {
+  //   const updatedQuestions = [...questions];
+  //   updatedQuestions[questionIndex].RelatedQuestions[relatedQuestionIndex][
+  //     field
+  //   ] = value;
+  //   setQuestions(updatedQuestions);
+  // };
 
   const handleAddAnswer = (questionIndex: number) => {
     const updatedQuestions = [...questions];
@@ -106,18 +106,18 @@ const AddModelExamPage: React.FC = () => {
     setQuestions(updatedQuestions);
   };
 
-  const handleAddRelatedQuestion = (questionIndex: number) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[questionIndex].RelatedQuestions.push({
-      ContentQuestion: "",
-      File: "",
-      Importance: false,
-      QuestionType: EQuestionType.MCQ,
-      Score: 0,
-      Answers: [{ Answer: "", IsCorrect: false, File: "" }],
-    });
-    setQuestions(updatedQuestions);
-  };
+  // const handleAddRelatedQuestion = (questionIndex: number) => {
+  //   const updatedQuestions = [...questions];
+  //   updatedQuestions[questionIndex].RelatedQuestions.push({
+  //     ContentQuestion: "",
+  //     File: "",
+  //     Importance: false,
+  //     QuestionType: EQuestionType.MCQ,
+  //     Score: 0,
+  //     Answers: [{ Answer: "", IsCorrect: false, File: "" }],
+  //   });
+  //   setQuestions(updatedQuestions);
+  // };
 
   const handleAddQuestion = () => {
     setQuestions([

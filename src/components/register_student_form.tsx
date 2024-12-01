@@ -117,9 +117,9 @@ export function RegisterStudentForm({
           Name: data.Name,
           Email: data.email || "",
           GenderId: Number(data.gender),
-          GradeId: data.gradeId,
-          LevelId: data.levelId,
-          SchoolId: data.schoolId,
+          GradeId: data.gradeId || "",
+          LevelId: data.levelId || "",
+          SchoolId: data.schoolId || "",
         });
       } else {
         // Register student
@@ -132,9 +132,9 @@ export function RegisterStudentForm({
           Religion: "", // Placeholder or actual religion value
           StateOfMind: "", // Placeholder or actual state of mind value
           Address: "", // Placeholder or actual address value
-          GradeId: data.gradeId,
-          SchoolId: data.schoolId,
-          LevelId: data.levelId,
+          GradeId: data.gradeId || "",
+          SchoolId: data.schoolId || "",
+          LevelId: data.levelId || "",
           SchoolName: "", // Placeholder or actual school name
           Password: data.password || "",
           Gender: Number(data.gender),
@@ -145,7 +145,7 @@ export function RegisterStudentForm({
       setError(null);
       if (onClose) onClose();
     } catch (err: any) {
-      setError(err.message || "Operation failed");
+      setError(isEdit ? err.message : err.Message || "Operation failed");
     } finally {
       setIsLoading(false);
     }
@@ -235,6 +235,7 @@ export function RegisterStudentForm({
                 <FormControl>
                   <select
                     {...field}
+                    value={field.value || ""}
                     className="w-full border rounded p-2 bg-gray-100"
                     disabled={isLoadingGrades}
                   >
@@ -263,6 +264,7 @@ export function RegisterStudentForm({
                 <FormControl>
                   <select
                     {...field}
+                    value={field.value || ""}
                     className="w-full border rounded p-2 bg-gray-100"
                     disabled={isLoadingLevels}
                   >
@@ -291,6 +293,7 @@ export function RegisterStudentForm({
                 <FormControl>
                   <select
                     {...field}
+                    value={field.value || ""}
                     className="w-full border rounded p-2 bg-gray-100"
                     disabled={isLoadingSchools}
                   >

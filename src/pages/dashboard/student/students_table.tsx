@@ -32,21 +32,9 @@ export function StudentUsersTable() {
   const [totalItems, setTotalItems] = useState(0); // Total number of items
 
   // Fetch school, grade, and level data
-  const {
-    schools,
-    isLoading: isLoadingSchools,
-    error: schoolError,
-  } = useSchoolSearch();
-  const {
-    grades,
-    isLoading: isLoadingGrades,
-    error: gradeError,
-  } = useGradeSearch();
-  const {
-    levels,
-    isLoading: isLoadingLevels,
-    error: levelError,
-  } = useLevelSearch();
+  const { schools } = useSchoolSearch();
+  const { grades } = useGradeSearch();
+  const { levels } = useLevelSearch();
 
   // Fetch students
   const fetchStudents = async () => {
@@ -170,8 +158,18 @@ export function StudentUsersTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableCell className="font-bold">Student Code</TableCell>
-              <TableCell className="font-bold">Student Name</TableCell>
+              <TableCell
+                className="font-bold"
+                onClick={() => handleSort("StudentCode")}
+              >
+                Student Code
+              </TableCell>
+              <TableCell
+                className="font-bold"
+                onClick={() => handleSort("StudentName")}
+              >
+                Student Name
+              </TableCell>
               <TableCell className="font-bold">Nationality</TableCell>
               <TableCell className="font-bold">School</TableCell>
               <TableCell className="font-bold">Class</TableCell>

@@ -118,9 +118,9 @@ export const getAllSchoolAdmins = async () => {
 };
 
 export const addFileStudent = async (
-  gradeId: string,
   schoolId: string,
-  studentFile: File
+  studentFile: File,
+  gradeId?: string
 ) => {
   try {
     // Create a FormData object to hold the file and other parameters

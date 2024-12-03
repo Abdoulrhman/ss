@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import apiInstance from "@/api/axiosInstance";
@@ -21,7 +23,7 @@ const AddModelExamPage: React.FC = () => {
     IsActive: true,
   });
 
-  const [questions, setQuestions] = useState<Question[]>([
+  const [questions, setQuestions] = useState<Question[] | any[]>([
     {
       ContentQuestion: "",
       File: "",
@@ -73,23 +75,36 @@ const AddModelExamPage: React.FC = () => {
               value !== "" && value !== null && value !== undefined
           )
         ),
-        RelatedQuestions: question.RelatedQuestions?.map((relatedQuestion) => ({
-          ...Object.fromEntries(
-            Object.entries(relatedQuestion).filter(
-              ([_, value]) =>
-                value !== "" && value !== null && value !== undefined
-            )
-          ),
-          Answers: relatedQuestion.Answers?.filter(
-            (answer) =>
-              answer.Answer !== "" &&
-              answer.Answer !== null &&
-              answer.Answer !== undefined &&
-              (answer.IsCorrect || answer.File)
-          ),
-        })),
+        RelatedQuestions: question.RelatedQuestions?.map(
+          (relatedQuestion: {
+            [s: string]: unknown;
+            Answers?: { Answer: string; IsCorrect: boolean; File: string }[];
+          }) => ({
+            ...Object.fromEntries(
+              Object.entries(relatedQuestion).filter(
+                ([_, value]) =>
+                  value !== "" && value !== null && value !== undefined
+              )
+            ),
+            Answers: relatedQuestion.Answers?.filter(
+              (answer: {
+                Answer: string | null | undefined;
+                IsCorrect: any;
+                File: any;
+              }) =>
+                answer.Answer !== "" &&
+                answer.Answer !== null &&
+                answer.Answer !== undefined &&
+                (answer.IsCorrect || answer.File)
+            ),
+          })
+        ),
         Answers: question.Answers?.filter(
-          (answer) =>
+          (answer: {
+            Answer: string | null | undefined;
+            IsCorrect: any;
+            File: any;
+          }) =>
             answer.Answer !== "" &&
             answer.Answer !== null &&
             answer.Answer !== undefined &&

@@ -765,3 +765,10 @@ export enum EQuestionType {
   Matching = 3,
   Drag = 4,
 }
+
+export enum Skills {
+  Reading = 1,
+  Writing = 2,
+  Listening = 3,
+  Speaking = 4,
+}
